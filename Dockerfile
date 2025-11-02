@@ -17,11 +17,16 @@ RUN apt-get update && apt-get install -y \
     libsdl2-image-dev \
     libsdl2-ttf-dev \
     libsdl2-mixer-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libswscale-dev \
     libffi-dev \
     libbz2-dev \
     zlib1g-dev \
     libpng-dev \
     libzip-dev \
+    libminizip-dev \
     python3 \
     python3-pip \
     libboost-filesystem-dev \
