@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y \
     libboost-thread-dev \
     libboost-program-options-dev \
     libboost-locale-dev \
+    libboost-iostreams-dev \
     xfce4 \
     xfce4-goodies \
     tigervnc-standalone-server \
