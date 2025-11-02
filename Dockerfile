@@ -83,11 +83,11 @@ EXPOSE 6080
 # Set working directory
 WORKDIR /app
 
-# Create mount points for persistent storage (Railway will mount here)
-# /data - for HoMM 3 game files
-# /app/saves - for save games
-# /app/config - for VCMI configuration
-VOLUME ["/data", "/app/saves", "/app/config"]
+# Note: Volumes are configured via Railway dashboard, not Dockerfile VOLUME
+# Railway will mount volumes to:
+# - /data - for HoMM 3 game files
+# - /app/saves - for save games
+# - /app/config - for VCMI configuration
 
 CMD ["/start.sh"]
 
