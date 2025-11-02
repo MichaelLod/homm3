@@ -1,0 +1,21 @@
+# HoMM 3 game files (users will upload these)
+homm3files/
+
+# Saves directory (local testing)
+saves/
+config/
+data/
+
+# Build artifacts
+build/
+*.o
+*.a
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+

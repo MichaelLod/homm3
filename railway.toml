@@ -1,0 +1,15 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "/start.sh"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# Note: Volumes are configured in Railway dashboard
+# Required volumes:
+# - /data - for HoMM 3 game files (~500MB recommended)
+# - /app/saves - for save games
+# - /app/config - for VCMI configuration (optional)
+
