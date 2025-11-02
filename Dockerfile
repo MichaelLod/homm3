@@ -43,8 +43,7 @@ RUN apt-get update && apt-get install -y \
 # Install noVNC and websockify
 RUN git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc \
     && git clone --depth 1 https://github.com/novnc/websockify.git /opt/novnc/utils/websockify \
-    && cd /opt/novnc && npm install --production \
-    && cd /opt/novnc/utils/websockify && python3 setup.py install
+    && cd /opt/novnc && npm install --production || true
 
 # Set up VNC
 RUN mkdir -p /root/.vnc && \
