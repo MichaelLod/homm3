@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y \
     nano \
     xdotool \
     unzip \
+    p7zip-full \
     && rm -rf /var/lib/apt/lists/*
 
 # Install gdown for downloading from Google Drive

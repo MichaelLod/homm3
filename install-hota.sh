@@ -68,9 +68,38 @@ mkdir -p temp_extract
 cd temp_extract
 
 echo "Extracting hota_installer.exe..." >&2
-# Try unzip first (most .exe installers are self-extracting ZIPs)
+# Try multiple extraction methods
+EXTRACTION_SUCCESS=false
+
+# Method 1: Try unzip (most .exe installers are self-extracting ZIPs)
+echo "Trying unzip..." >&2
 if unzip -o ../hota_installer.exe 2>&1 | tee /tmp/hota-unzip.log; then
-    echo "✅ Successfully extracted with unzip" >&2
+    if [ "$(ls -A . 2>/dev/null | wc -l)" -gt 2 ]; then
+        echo "✅ Successfully extracted with unzip" >&2
+        EXTRACTION_SUCCESS=true
+    else
+        echo "⚠️  unzip succeeded but extracted directory is empty" >&2
+    fi
+fi
+
+# Method 2: Try 7z (supports more archive formats)
+if [ "$EXTRACTION_SUCCESS" = "false" ]; then
+    echo "Trying 7z..." >&2
+    if command -v 7z &> /dev/null; then
+        if 7z x ../hota_installer.exe -o. 2>&1 | tee /tmp/hota-7z.log; then
+            if [ "$(ls -A . 2>/dev/null | wc -l)" -gt 2 ]; then
+                echo "✅ Successfully extracted with 7z" >&2
+                EXTRACTION_SUCCESS=true
+            else
+                echo "⚠️  7z succeeded but extracted directory is empty" >&2
+            fi
+        fi
+    else
+        echo "⚠️  7z not available" >&2
+    fi
+fi
+
+if [ "$EXTRACTION_SUCCESS" = "true" ]; then
     echo "Extracted contents:" >&2
     ls -la | head -20 >&2
     
@@ -122,9 +151,22 @@ if unzip -o ../hota_installer.exe 2>&1 | tee /tmp/hota-unzip.log; then
         echo "⚠️  Extracted but mod structure unclear. Full contents:" >&2
         find . -type d -maxdepth 2 | head -20 >&2
         echo "" >&2
+        echo "Listing all files and directories:" >&2
+        find . -type f -o -type d | head -30 >&2
+        echo "" >&2
         echo "Please check /data/mods/temp_extract/ and manually copy the HotA mod folder" >&2
         exit 1
     fi
+else
+    echo "❌ Failed to extract hota_installer.exe with any method" >&2
+    echo "The .exe file is likely a Windows installer that requires Windows to run." >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "1. Extract the .exe on Windows using 7-Zip or WinRAR" >&2
+    echo "2. Upload the extracted 'Mods' or 'HotA' folder directly to /data/mods/" >&2
+    echo "3. Use a different HotA download that is VCMI-compatible" >&2
+    exit 1
+fi
     
     cd /data/mods
     
