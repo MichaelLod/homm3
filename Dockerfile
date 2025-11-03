@@ -44,6 +44,12 @@ RUN apt-get update && apt-get install -y \
     xterm \
     net-tools \
     nano \
+    qt5-qmake \
+    qtbase5-dev \
+    qtbase5-dev-tools \
+    libqt5core5a \
+    libqt5gui5 \
+    libqt5widgets5 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install noVNC and websockify
