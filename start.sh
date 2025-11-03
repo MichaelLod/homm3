@@ -47,6 +47,9 @@ fi
 # Create desktop launcher
 /create-desktop.sh
 
+# Ensure PORT is set (Railway provides this, default to 6080)
+export PORT="${PORT:-6080}"
+
 # Start supervisor (which will start VNC and noVNC)
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
 
