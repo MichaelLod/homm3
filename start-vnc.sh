@@ -14,8 +14,9 @@ chmod 1777 /tmp/.X11-unix
 sleep 2
 
 # Start VNC server (it runs in background) - capture output for debugging
-/usr/bin/vncserver :1 -geometry 1920x1080 -depth 24 -localhost no -SecurityTypes VncAuth 2>&1 | tee /tmp/vnc-startup.log || {
-    echo "Failed to start VNC server. Output:"
+# Output to both file and stdout so Railway logs show it
+/usr/bin/vncserver :1 -geometry 1920x1080 -depth 24 -localhost no -SecurityTypes VncAuth 2>&1 | tee /tmp/vnc-startup.log | tee /dev/stderr || {
+    echo "Failed to start VNC server. Output:" >&2
     cat /tmp/vnc-startup.log 2>/dev/null || true
     exit 1
 }
@@ -23,13 +24,15 @@ sleep 2
 # Wait and verify it started
 sleep 3
 if ! pgrep -f "Xvnc.*:1" > /dev/null; then
-    echo "ERROR: VNC server process not found after startup"
-    echo "Startup log:"
+    echo "ERROR: VNC server process not found after startup" >&2
+    echo "Startup log:" >&2
     cat /tmp/vnc-startup.log 2>/dev/null || true
+    echo "Checking VNC server logs:" >&2
+    cat /root/.vnc/*:1.log 2>/dev/null || echo "No VNC log files found" >&2
     exit 1
 fi
 
-echo "VNC server started successfully"
+echo "VNC server started successfully" >&2
 
 # Monitor the VNC process (keep script running for supervisor)
 while true; do
