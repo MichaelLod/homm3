@@ -97,9 +97,11 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Create startup script and desktop launcher
 COPY start.sh /start.sh
+COPY start-vnc.sh /start-vnc.sh
+COPY start-novnc.sh /start-novnc.sh
 COPY create-desktop.sh /create-desktop.sh
 COPY setup-homm3-files.sh /setup-homm3-files.sh
-RUN chmod +x /start.sh /create-desktop.sh /setup-homm3-files.sh
+RUN chmod +x /start.sh /start-vnc.sh /start-novnc.sh /create-desktop.sh /setup-homm3-files.sh
 
 # Expose VNC port (Railway will provide PORT env var)
 EXPOSE 6080
