@@ -60,14 +60,14 @@ if [ ! -f ~/.config/vcmi/settings.json ] || ! grep -q '"fullscreen"' ~/.config/v
         # Update existing config using jq if available, or create a new one
         cat > /tmp/vcmi_settings.json << 'EOFJSON'
 {
-  "video": {
-    "fullscreen": true,
-    "realFullscreen": false,
-    "resolution": {
-      "width": 1920,
-      "height": 1080
+    "video": {
+      "fullscreen": true,
+      "realFullscreen": false,
+      "resolution": {
+        "width": 1280,
+        "height": 720
+      }
     }
-  }
 }
 EOFJSON
         # Merge with existing config if it has content, otherwise use new one
@@ -86,7 +86,8 @@ if "video" not in config:
 config["video"]["fullscreen"] = True
 config["video"]["realFullscreen"] = False
 if "resolution" not in config["video"]:
-    config["video"]["resolution"] = {"width": 1920, "height": 1080}
+    # Lower resolution for better VNC performance (1280x720 instead of 1920x1080)
+    config["video"]["resolution"] = {"width": 1280, "height": 720}
 with open("/root/.config/vcmi/settings.json", "w") as f:
     json.dump(config, f, indent=2)
 PYEOF
@@ -96,14 +97,14 @@ PYEOF
     else
         cat > ~/.config/vcmi/settings.json << 'EOFJSON'
 {
-  "video": {
-    "fullscreen": true,
-    "realFullscreen": false,
-    "resolution": {
-      "width": 1920,
-      "height": 1080
+    "video": {
+      "fullscreen": true,
+      "realFullscreen": false,
+      "resolution": {
+        "width": 1280,
+        "height": 720
+      }
     }
-  }
 }
 EOFJSON
     fi

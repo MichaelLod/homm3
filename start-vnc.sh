@@ -13,9 +13,18 @@ chmod 1777 /tmp/.X11-unix
 # Wait a moment for cleanup
 sleep 2
 
-# Start VNC server (it runs in background) - capture output for debugging
-# Output to both file and stdout so Railway logs show it
-/usr/bin/vncserver :1 -geometry 1920x1080 -depth 24 -localhost no -SecurityTypes VncAuth 2>&1 | tee /tmp/vnc-startup.log | tee /dev/stderr || {
+# Start VNC server with performance optimizations
+# - Reduced to 1280x720 for better performance (VCMI will use this resolution)
+# - CompressionLevel 1 = fastest (lower quality but better performance)
+# - PreferredEncoding tight = better compression
+/usr/bin/vncserver :1 \
+    -geometry 1280x720 \
+    -depth 24 \
+    -localhost no \
+    -SecurityTypes VncAuth \
+    -CompressionLevel 1 \
+    -PreferredEncoding tight \
+    2>&1 | tee /tmp/vnc-startup.log | tee /dev/stderr || {
     echo "Failed to start VNC server. Output:" >&2
     cat /tmp/vnc-startup.log 2>/dev/null || true
     exit 1
