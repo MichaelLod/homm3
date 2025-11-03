@@ -40,7 +40,7 @@ RUN git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc \
 
 # Set up VNC
 RUN mkdir -p /root/.vnc && \
-    echo '#!/bin/bash\nunset SESSION_MANAGER\nunset DBUS_SESSION_BUS_ADDRESS\n[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\nfluxbox &\nexec bash\n' > /root/.vnc/xstartup && \
+    echo '#!/bin/bash\nunset SESSION_MANAGER\nunset DBUS_SESSION_BUS_ADDRESS\n[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\nfluxbox &\n# Keep session alive - use tail -f instead of exec bash for better compatibility\nwhile true; do sleep 3600; done\n' > /root/.vnc/xstartup && \
     chmod +x /root/.vnc/xstartup
 
 # Create directories for VCMI (VCMI from PPA installs to /usr/games and /usr/bin)
