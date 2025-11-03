@@ -76,6 +76,10 @@ EXPOSE 6080
 # Set working directory
 WORKDIR /app
 
+# Add build metadata
+RUN echo "Build completed at $(date)" >> /tmp/build-info.txt && \
+    cat /tmp/build-info.txt
+
 # Note: Volumes are configured via Railway dashboard, not Dockerfile VOLUME
 # Railway will mount one volume to /data with subdirectories:
 # - /data/Data - for HoMM 3 game files
