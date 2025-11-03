@@ -75,11 +75,14 @@ except Exception as e:
     fi
 fi
 
-# Use the identifier from mod.json if found, otherwise use directory name
-if [ -z "$MOD_ID" ] || [ "$MOD_ID" = "$HOTA_MOD_NAME" ]; then
+# VCMI uses directory name as identifier if no identifier field in mod.json
+# Since mod.json doesn't have identifier, we MUST use the directory name
+if [ -z "$MOD_ID" ] || [ "$MOD_ID" = "NOT_FOUND" ] || [ "$MOD_ID" = "$HOTA_MOD_NAME" ]; then
     MOD_ID="$HOTA_MOD_NAME"
+    echo "⚠️  No identifier in mod.json, using directory name: $MOD_ID" >&2
 fi
 echo "Using mod identifier: $MOD_ID" >&2
+echo "⚠️  IMPORTANT: VCMI uses directory name as mod identifier when mod.json has no 'identifier' field" >&2
 
 echo ""
 echo "Enabling HotA mod in VCMI configuration..."
@@ -107,42 +110,51 @@ except:
 # VCMI uses modSettings with the mod identifier from mod.json
 # The key should match the 'identifier' field in mod.json
 
-# Primary approach: Use modSettings with the actual identifier from mod.json
+# Primary approach: Use modSettings with directory name (VCMI standard)
+# VCMI uses the directory name as the identifier when mod.json has no identifier field
 if "modSettings" not in config:
     config["modSettings"] = {}
 
-# Use the identifier from mod.json as the primary key (most important)
-if mod_id:
-    config["modSettings"][mod_id] = {
-        "active": True,
-        "enabled": True
-    }
-    print(f"   Set modSettings['{mod_id}'] = enabled")
-
-# Also set using directory name as fallback
+# VCMI uses directory name as the key - this is the most important
 config["modSettings"][mod_name] = {
     "active": True,
     "enabled": True
 }
-print(f"   Set modSettings['{mod_name}'] = enabled")
+print(f"   Set modSettings['{mod_name}'] = enabled (using directory name)")
+
+# Also try with mod_id if it's different from mod_name and not NOT_FOUND
+if mod_id and mod_id != mod_name and mod_id != "NOT_FOUND":
+    config["modSettings"][mod_id] = {
+        "active": True,
+        "enabled": True
+    }
+    print(f"   Set modSettings['{mod_id}'] = enabled (from mod.json)")
 
 # Approach 2: activeMods array (VCMI uses this to list active mods)
 if "activeMods" not in config:
     config["activeMods"] = []
 
-# Add both identifier and directory name to activeMods
-for mod_key in [mod_id, mod_name]:
-    if mod_key and mod_key not in config["activeMods"]:
-        config["activeMods"].append(mod_key)
-        print(f"   Added '{mod_key}' to activeMods")
+# Add directory name to activeMods (most important - VCMI uses this)
+if mod_name and mod_name not in config["activeMods"]:
+    config["activeMods"].append(mod_name)
+    print(f"   Added '{mod_name}' to activeMods (directory name)")
+
+# Also add mod_id if it's different and valid
+if mod_id and mod_id != mod_name and mod_id != "NOT_FOUND" and mod_id not in config["activeMods"]:
+    config["activeMods"].append(mod_id)
+    print(f"   Added '{mod_id}' to activeMods (from mod.json)")
 
 # Approach 3: mods array (deprecated but some versions might use it)
 if "mods" not in config:
     config["mods"] = []
 
-for mod_key in [mod_id, mod_name]:
-    if mod_key and mod_key not in config["mods"]:
-        config["mods"].append(mod_key)
+# Add directory name to mods array (deprecated but some versions use it)
+if mod_name and mod_name not in config["mods"]:
+    config["mods"].append(mod_name)
+
+# Also add mod_id if valid
+if mod_id and mod_id != mod_name and mod_id != "NOT_FOUND" and mod_id not in config["mods"]:
+    config["mods"].append(mod_id)
 
 # Save config
 with open(config_file, "w") as f:
