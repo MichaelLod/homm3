@@ -54,6 +54,13 @@ rm -rf /tmp/homm3_files.zip /tmp/homm3_extract
 if ls /data/Data/*.{lod,snd,vid} >/dev/null 2>&1; then
     echo "✅ HoMM3 files downloaded and extracted to /data/Data/"
     ls -lh /data/Data/ | head -10
+    
+    # Copy to VCMI standard location (VCMI checks this path first)
+    echo "Copying files to VCMI standard location (/usr/share/games/vcmi/Data/)..."
+    mkdir -p /usr/share/games/vcmi/Data
+    cp -u /data/Data/*.lod /data/Data/*.snd /data/Data/*.vid /usr/share/games/vcmi/Data/ 2>/dev/null || true
+    echo "✅ Files copied to VCMI standard location"
+    ls -lh /usr/share/games/vcmi/Data/ | head -10
 else
     echo "⚠️  Files extracted but not found in /data/Data/"
     exit 1

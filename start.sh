@@ -159,9 +159,12 @@ if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ]
             /usr/local/bin/download-homm3-files 2>&1 | tee /tmp/homm3-download.log || echo "HoMM3 download failed, check /tmp/homm3-download.log" >&2
             rm -f /data/.homm3-download-queued 2>/dev/null || true
             
-            # Copy to VCMI standard location after download
+            # Note: download-homm3-files.sh already copies to VCMI standard location
+            # This is just a fallback in case the copy in the script failed
             if [ -d /data/Data ] && ls /data/Data/*.{lod,snd,vid} >/dev/null 2>&1; then
+                mkdir -p /usr/share/games/vcmi/Data
                 cp -u /data/Data/*.lod /data/Data/*.snd /data/Data/*.vid /usr/share/games/vcmi/Data/ 2>/dev/null || true
+                echo "✅ HoMM3 files available at /usr/share/games/vcmi/Data/ (VCMI standard location)" >&2
             fi
         fi
         
