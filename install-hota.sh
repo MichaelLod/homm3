@@ -77,6 +77,12 @@ if unzip -o ../hota_installer.exe 2>/dev/null; then
     cd /data/mods
     rm -rf temp_extract hota_installer.exe
     
+    # Enable HotA mod in VCMI configuration
+    if [ -f /usr/local/bin/enable-hota-mod ]; then
+        echo "Enabling HotA mod in VCMI configuration..."
+        /usr/local/bin/enable-hota-mod || echo "⚠️  Could not enable mod automatically, enable manually in VCMI Mod Manager"
+    fi
+    
     # Verify HotA mod is installed correctly
     if [ -d "/data/mods/HotA" ] || [ -d "/data/mods/hota" ]; then
         echo "✅ HotA mod installed to /data/mods/"

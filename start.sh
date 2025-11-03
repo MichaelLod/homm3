@@ -174,6 +174,12 @@ if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ]
             /install-hota.sh 2>&1 | tee /tmp/hota-install.log || echo "HotA installation failed, check /tmp/hota-install.log" >&2
             rm -f /data/mods/.hota-install-queued 2>/dev/null || true
             touch /data/mods/.hota-installed 2>/dev/null || true
+            
+            # Try to enable HotA mod if it was successfully installed
+            if [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
+                echo "Attempting to enable HotA mod in VCMI configuration..." >&2
+                /usr/local/bin/enable-hota-mod 2>&1 | tee /tmp/hota-enable.log || echo "Could not enable HotA mod automatically" >&2
+            fi
         fi
     ) &
 fi
