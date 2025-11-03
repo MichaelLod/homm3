@@ -9,7 +9,7 @@ if [ ! -f ~/.vnc/passwd ]; then
 fi
 
 # Ensure directories exist
-mkdir -p /data /app/saves /app/config
+mkdir -p /data
 
 # Set up VCMI directory structure
 mkdir -p ~/.vcmi
