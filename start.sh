@@ -153,5 +153,16 @@ if [ -f /data/mods/.hota-install-queued ]; then
 fi
 
 # Start supervisor (which will start VNC and noVNC)
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+echo "Starting supervisor..." >&2
+if [ ! -f /usr/bin/supervisord ]; then
+    echo "ERROR: supervisord not found at /usr/bin/supervisord" >&2
+    exit 1
+fi
+if [ ! -f /etc/supervisor/conf.d/supervisord.conf ]; then
+    echo "ERROR: supervisord.conf not found" >&2
+    exit 1
+fi
+
+# Start supervisor in foreground (this is the main process)
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n
 
