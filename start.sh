@@ -52,6 +52,63 @@ if [ ! -L ~/.config/vcmi ]; then
     ln -sf /app/config ~/.config/vcmi
 fi
 
+# Set up VCMI to run in fullscreen mode by default
+mkdir -p ~/.config/vcmi
+if [ ! -f ~/.config/vcmi/settings.json ] || ! grep -q '"fullscreen"' ~/.config/vcmi/settings.json 2>/dev/null; then
+    # Create or update settings.json to enable fullscreen
+    if [ -f ~/.config/vcmi/settings.json ]; then
+        # Update existing config using jq if available, or create a new one
+        cat > /tmp/vcmi_settings.json << 'EOFJSON'
+{
+  "video": {
+    "fullscreen": true,
+    "realFullscreen": false,
+    "resolution": {
+      "width": 1920,
+      "height": 1080
+    }
+  }
+}
+EOFJSON
+        # Merge with existing config if it has content, otherwise use new one
+        if [ -s ~/.config/vcmi/settings.json ]; then
+            # Try to merge (simple approach - just ensure fullscreen is set)
+            python3 << 'PYEOF'
+import json
+import sys
+try:
+    with open("/root/.config/vcmi/settings.json", "r") as f:
+        config = json.load(f)
+except:
+    config = {}
+if "video" not in config:
+    config["video"] = {}
+config["video"]["fullscreen"] = True
+config["video"]["realFullscreen"] = False
+if "resolution" not in config["video"]:
+    config["video"]["resolution"] = {"width": 1920, "height": 1080}
+with open("/root/.config/vcmi/settings.json", "w") as f:
+    json.dump(config, f, indent=2)
+PYEOF
+        else
+            cp /tmp/vcmi_settings.json ~/.config/vcmi/settings.json
+        fi
+    else
+        cat > ~/.config/vcmi/settings.json << 'EOFJSON'
+{
+  "video": {
+    "fullscreen": true,
+    "realFullscreen": false,
+    "resolution": {
+      "width": 1920,
+      "height": 1080
+    }
+  }
+}
+EOFJSON
+    fi
+fi
+
 # Create desktop launcher
 /create-desktop.sh
 
