@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libbz2-dev \
     zlib1g-dev \
+    liblzma-dev \
     libpng-dev \
     libzip-dev \
     libminizip-dev \
@@ -52,6 +53,8 @@ RUN apt-get update && apt-get install -y \
     libqt5gui5 \
     libqt5widgets5 \
     libqt5opengl5-dev \
+    libqt5svg5-dev \
+    libtbb-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install noVNC and websockify
