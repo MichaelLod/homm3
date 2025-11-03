@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>HoMM3 VCMI - Mobile</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        #vnc-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        /* Hide noVNC toolbar on mobile for more screen space */
+        @media (max-width: 768px) {
+            #noVNC_control_bar,
+            #noVNC_status_bar {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="vnc-container">
+        <iframe src="vnc_lite.html?autoconnect=true&resize=downscale&scale=1.0" 
+                allowfullscreen 
+                webkitallowfullscreen 
+                mozallowfullscreen>
+        </iframe>
+    </div>
+    <script>
+        // Prevent zoom on double-tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Fullscreen support
+        if (screen.orientation) {
+            screen.orientation.lock('landscape').catch(() => {});
+        }
+    </script>
+</body>
+</html>
+

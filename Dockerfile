@@ -42,7 +42,37 @@ RUN apt-get update && \
 RUN git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc \
     && git clone --depth 1 https://github.com/novnc/websockify.git /opt/novnc/utils/websockify \
     && cd /opt/novnc && npm install --production || true \
-    && echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=vnc.html" /><script>window.location.href="vnc.html";</script></head><body>Redirecting to <a href="vnc.html">noVNC</a>...</body></html>' > /opt/novnc/index.html
+    && echo '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><script>if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.location.href="mobile.html";}else{window.location.href="vnc.html";}</script></head><body>Redirecting... <a href="vnc.html">Desktop</a> | <a href="mobile.html">Mobile</a></body></html>' > /opt/novnc/index.html \
+    && cat > /opt/novnc/mobile-config.js << 'EOFMOBILE'
+// Mobile-friendly noVNC configuration
+window.addEventListener('DOMContentLoaded', function() {
+    // Detect mobile devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        // Enable touch controls
+        document.body.classList.add('mobile-device');
+        
+        // Add viewport meta tag if not present
+        if (!document.querySelector('meta[name="viewport"]')) {
+            const viewport = document.createElement('meta');
+            viewport.name = 'viewport';
+            viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+            document.head.appendChild(viewport);
+        }
+        
+        // Optimize for mobile after page load
+        setTimeout(function() {
+            const vnc = document.getElementById('noVNC_screen');
+            if (vnc) {
+                vnc.style.touchAction = 'none';
+                vnc.style.webkitUserSelect = 'none';
+                vnc.style.userSelect = 'none';
+            }
+        }, 1000);
+    }
+});
+EOFMOBILE
 
 # Set up VCMI auto-load script
 # Since VCMI doesn't support --load, we use xdotool to automatically navigate the menu
@@ -68,8 +98,9 @@ RUN mkdir -p /root/.vcmi
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Create startup script and desktop launcher (copy all at once, then chmod in one step)
-COPY start.sh start-vnc.sh start-novnc.sh create-desktop.sh setup-homm3-files.sh /
-RUN chmod +x /start.sh /start-vnc.sh /start-novnc.sh /create-desktop.sh /setup-homm3-files.sh
+COPY start.sh start-vnc.sh start-novnc.sh create-desktop.sh setup-homm3-files.sh mobile-vnc-wrapper.html /
+RUN chmod +x /start.sh /start-vnc.sh /start-novnc.sh /create-desktop.sh /setup-homm3-files.sh \
+    && cp /mobile-vnc-wrapper.html /opt/novnc/mobile.html
 
 # Expose VNC port (Railway will provide PORT env var)
 EXPOSE 6080
