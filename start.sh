@@ -73,6 +73,12 @@ if [ ! -d /data/mods/HotA ] && [ ! -d /data/mods/hota ] && [ ! -f /data/mods/.ho
     echo "HotA mod not found, will attempt automatic installation after startup..."
     # Mark as attempted so we don't try multiple times
     touch /data/mods/.hota-install-queued 2>/dev/null || true
+elif [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
+    # HotA is already installed, but ensure it's enabled in VCMI config
+    if [ ! -f /data/mods/.hota-enabled ]; then
+        echo "HotA mod found, will enable it in VCMI configuration after startup..."
+        touch /data/mods/.hota-enable-queued 2>/dev/null || true
+    fi
 fi
 
 # Create VCMI config directory link (also in /data volume)
@@ -149,7 +155,7 @@ fi
 export PORT="${PORT:-6080}"
 
 # Start file downloads in background if queued (after supervisor starts)
-if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ]; then
+if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ] || [ -f /data/mods/.hota-enable-queued ]; then
     (
         sleep 10  # Wait for supervisor to be ready
         
@@ -179,7 +185,16 @@ if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ]
             if [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
                 echo "Attempting to enable HotA mod in VCMI configuration..." >&2
                 /usr/local/bin/enable-hota-mod 2>&1 | tee /tmp/hota-enable.log || echo "Could not enable HotA mod automatically" >&2
+                touch /data/mods/.hota-enabled 2>/dev/null || true
             fi
+        fi
+        
+        # Enable HotA mod if queued (for already installed mods)
+        if [ -f /data/mods/.hota-enable-queued ]; then
+            echo "Enabling already installed HotA mod in VCMI configuration..." >&2
+            /usr/local/bin/enable-hota-mod 2>&1 | tee /tmp/hota-enable.log || echo "Could not enable HotA mod automatically" >&2
+            rm -f /data/mods/.hota-enable-queued 2>/dev/null || true
+            touch /data/mods/.hota-enabled 2>/dev/null || true
         fi
     ) &
 fi
