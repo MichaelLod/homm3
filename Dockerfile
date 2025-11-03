@@ -4,6 +4,9 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DISPLAY=:1
 
+# Force rebuild - invalidate cache
+RUN echo "Build timestamp: $(date)" > /tmp/build-info.txt
+
 # Install system dependencies and desktop environment
 # Note: Removed build dependencies since we're using pre-built VCMI from PPA
 RUN apt-get update && apt-get install -y \
