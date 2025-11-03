@@ -249,13 +249,18 @@ if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ]
         
         # Restart VCMI if queued (for already enabled mods that need a restart)
         if [ -f /data/mods/.hota-restart-queued ]; then
-            echo "Restarting VCMI to load already-enabled HotA mod..." >&2
+            echo "Force restarting VCMI to load already-enabled HotA mod..." >&2
             sleep 10  # Wait a bit longer to ensure VCMI has fully started
-            pkill -f vcmiclient 2>/dev/null && {
-                echo "✅ VCMI process terminated, will restart automatically with HotA mod" >&2
+            
+            # Force kill VCMI (kill -9) to ensure it terminates even if showing dialogs
+            pkill -9 -f vcmiclient 2>/dev/null && {
+                echo "✅ VCMI process force terminated, will restart automatically with HotA mod" >&2
             } || {
                 echo "⚠️  VCMI process not found (may have already restarted)" >&2
             }
+            
+            # Give it a moment to fully terminate
+            sleep 2
             rm -f /data/mods/.hota-restart-queued 2>/dev/null || true
         fi
     ) &
