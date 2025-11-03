@@ -64,8 +64,8 @@ if [ ! -f ~/.config/vcmi/settings.json ] || ! grep -q '"fullscreen"' ~/.config/v
       "fullscreen": true,
       "realFullscreen": false,
       "resolution": {
-        "width": 1280,
-        "height": 720
+        "width": 1920,
+        "height": 1080
       }
     }
 }
@@ -86,8 +86,7 @@ if "video" not in config:
 config["video"]["fullscreen"] = True
 config["video"]["realFullscreen"] = False
 if "resolution" not in config["video"]:
-    # Lower resolution for better VNC performance (1280x720 instead of 1920x1080)
-    config["video"]["resolution"] = {"width": 1280, "height": 720}
+    config["video"]["resolution"] = {"width": 1920, "height": 1080}
 with open("/root/.config/vcmi/settings.json", "w") as f:
     json.dump(config, f, indent=2)
 PYEOF
@@ -101,8 +100,8 @@ PYEOF
       "fullscreen": true,
       "realFullscreen": false,
       "resolution": {
-        "width": 1280,
-        "height": 720
+        "width": 1920,
+        "height": 1080
       }
     }
 }

@@ -16,17 +16,16 @@ done
 
 cd /opt/novnc/utils/websockify
 
-# Try different ways to run websockify with performance optimizations
-# --compress=zlib = use compression for better performance over network
+# Try different ways to run websockify
 if [ -f "run" ]; then
     echo "Using websockify run script"
-    exec ./run --web=/opt/novnc --compress=zlib 0.0.0.0:${PORT} localhost:5901
+    exec ./run --web=/opt/novnc 0.0.0.0:${PORT} localhost:5901
 elif [ -f "websockify/websocketproxy.py" ]; then
     echo "Using websocketproxy.py directly"
-    exec python3 websockify/websocketproxy.py --web=/opt/novnc --compress=zlib 0.0.0.0:${PORT} localhost:5901
+    exec python3 websockify/websocketproxy.py --web=/opt/novnc 0.0.0.0:${PORT} localhost:5901
 elif python3 -m websockify --help >/dev/null 2>&1; then
     echo "Using websockify as module"
-    exec python3 -m websockify --web=/opt/novnc --compress=zlib 0.0.0.0:${PORT} localhost:5901
+    exec python3 -m websockify --web=/opt/novnc 0.0.0.0:${PORT} localhost:5901
 else
     echo "ERROR: Could not find websockify"
     exit 1
