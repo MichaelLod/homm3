@@ -42,6 +42,16 @@ if [ ! -L ~/.vcmi/Saves ]; then
     ln -sf /app/saves ~/.vcmi/Saves
 fi
 
+# Link mods directory to persistent storage
+if [ ! -L ~/.vcmi/Mods ]; then
+    mkdir -p /app/mods
+    if [ -d ~/.vcmi/Mods ] && [ ! -L ~/.vcmi/Mods ]; then
+        mv ~/.vcmi/Mods/* /app/mods/ 2>/dev/null || true
+        rmdir ~/.vcmi/Mods
+    fi
+    ln -sf /app/mods ~/.vcmi/Mods
+fi
+
 # Create VCMI config directory link
 if [ ! -L ~/.config/vcmi ]; then
     mkdir -p ~/.config

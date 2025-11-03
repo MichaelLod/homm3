@@ -123,6 +123,24 @@ Once your game files are in place:
 
 Or use the desktop shortcut created automatically, or right-click → VCMI Client from the Fluxbox menu.
 
+## Mods (Horn of the Abyss, etc.)
+
+VCMI supports mods like Horn of the Abyss (HotA). To install mods:
+
+1. **Using the setup script:**
+   ```bash
+   /setup-hota-mod.sh
+   ```
+   Follow the prompts to install HotA or other mods.
+
+2. **Manual installation:**
+   - Download HotA from: https://www.hotacampaign.com/
+   - Or use Heroes Launcher: https://heroescommunity.com/viewforum.php?f=27
+   - Copy mod files to `/app/mods/` (persistent storage)
+   - Restart VCMI and enable the mod in Mod Manager
+
+Mods are stored in `/app/mods` which persists across deployments.
+
 ## Save Games
 
 Save games are automatically persisted in `/app/saves` which is:

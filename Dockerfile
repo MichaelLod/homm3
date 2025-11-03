@@ -98,8 +98,8 @@ RUN mkdir -p /root/.vcmi
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Create startup script and desktop launcher (copy all at once, then chmod in one step)
-COPY start.sh start-vnc.sh start-novnc.sh create-desktop.sh setup-homm3-files.sh mobile-vnc-wrapper.html /
-RUN chmod +x /start.sh /start-vnc.sh /start-novnc.sh /create-desktop.sh /setup-homm3-files.sh \
+COPY start.sh start-vnc.sh start-novnc.sh create-desktop.sh setup-homm3-files.sh setup-hota-mod.sh mobile-vnc-wrapper.html /
+RUN chmod +x /start.sh /start-vnc.sh /start-novnc.sh /create-desktop.sh /setup-homm3-files.sh /setup-hota-mod.sh \
     && cp /mobile-vnc-wrapper.html /opt/novnc/mobile.html
 
 # Expose VNC port (Railway will provide PORT env var)
