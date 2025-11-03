@@ -52,7 +52,8 @@ RUN mkdir -p /root/.vnc /usr/local/bin
 COPY vcmiclient-autoload.sh /usr/local/bin/vcmiclient-autoload
 COPY vcmiclient-newgame.sh /usr/local/bin/vcmiclient-newgame
 COPY xstartup.sh /root/.vnc/xstartup
-RUN chmod +x /usr/local/bin/vcmiclient-autoload /usr/local/bin/vcmiclient-newgame /root/.vnc/xstartup
+COPY download-homm3-files.sh /usr/local/bin/download-homm3-files
+RUN chmod +x /usr/local/bin/vcmiclient-autoload /usr/local/bin/vcmiclient-newgame /root/.vnc/xstartup /usr/local/bin/download-homm3-files
 
 # Create directories for VCMI (VCMI from PPA installs to /usr/games and /usr/bin)
 # Note: All persistent data is now in /data volume (created at runtime)
@@ -66,8 +67,8 @@ RUN mkdir -p /root/.vcmi
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Create startup script and desktop launcher (copy all at once, then chmod in one step)
-COPY start.sh start-vnc.sh start-novnc.sh create-desktop.sh setup-homm3-files.sh setup-hota-mod.sh install-hota.sh mobile-vnc-wrapper.html /
-RUN chmod +x /start.sh /start-vnc.sh /start-novnc.sh /create-desktop.sh /setup-homm3-files.sh /setup-hota-mod.sh /install-hota.sh \
+COPY start.sh start-vnc.sh start-novnc.sh create-desktop.sh setup-homm3-files.sh setup-hota-mod.sh install-hota.sh download-homm3-files.sh mobile-vnc-wrapper.html /
+RUN chmod +x /start.sh /start-vnc.sh /start-novnc.sh /create-desktop.sh /setup-homm3-files.sh /setup-hota-mod.sh /install-hota.sh /download-homm3-files.sh \
     && cp /mobile-vnc-wrapper.html /opt/novnc/mobile.html
 
 # Expose VNC port (Railway will provide PORT env var)

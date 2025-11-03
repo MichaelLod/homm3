@@ -32,6 +32,12 @@ if [ ! -L ~/.vcmi/Data ]; then
     ln -sf /data/Data ~/.vcmi/Data
 fi
 
+# Auto-download HoMM3 files if not present (run in background after supervisor starts)
+if [ ! -d /data/Data ] || ! ls /data/Data/*.{lod,snd,vid} >/dev/null 2>&1; then
+    echo "HoMM3 files not found, will attempt automatic download after startup..."
+    touch /data/.homm3-download-queued 2>/dev/null || true
+fi
+
 # Copy game files to VCMI standard location (/usr/share/games/vcmi/Data)
 # VCMI checks standard system paths before ~/.vcmi/Data
 mkdir -p /usr/share/games/vcmi/Data
@@ -142,13 +148,30 @@ fi
 # Ensure PORT is set (Railway provides this, default to 6080)
 export PORT="${PORT:-6080}"
 
-# Start HotA installation in background if queued (after supervisor starts)
-if [ -f /data/mods/.hota-install-queued ]; then
+# Start file downloads in background if queued (after supervisor starts)
+if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ]; then
     (
         sleep 10  # Wait for supervisor to be ready
-        /install-hota.sh 2>&1 | tee /tmp/hota-install.log || echo "HotA installation failed, check /tmp/hota-install.log"
-        rm -f /data/mods/.hota-install-queued 2>/dev/null || true
-        touch /data/mods/.hota-installed 2>/dev/null || true
+        
+        # Download HoMM3 files if queued
+        if [ -f /data/.homm3-download-queued ]; then
+            echo "Starting HoMM3 files download..." >&2
+            /usr/local/bin/download-homm3-files 2>&1 | tee /tmp/homm3-download.log || echo "HoMM3 download failed, check /tmp/homm3-download.log" >&2
+            rm -f /data/.homm3-download-queued 2>/dev/null || true
+            
+            # Copy to VCMI standard location after download
+            if [ -d /data/Data ] && ls /data/Data/*.{lod,snd,vid} >/dev/null 2>&1; then
+                cp -u /data/Data/*.lod /data/Data/*.snd /data/Data/*.vid /usr/share/games/vcmi/Data/ 2>/dev/null || true
+            fi
+        fi
+        
+        # Install HotA mod if queued
+        if [ -f /data/mods/.hota-install-queued ]; then
+            echo "Starting HotA installation..." >&2
+            /install-hota.sh 2>&1 | tee /tmp/hota-install.log || echo "HotA installation failed, check /tmp/hota-install.log" >&2
+            rm -f /data/mods/.hota-install-queued 2>/dev/null || true
+            touch /data/mods/.hota-installed 2>/dev/null || true
+        fi
     ) &
 fi
 
