@@ -64,7 +64,7 @@ RUN git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc \
 
 # Set up VNC
 RUN mkdir -p /root/.vnc && \
-    echo '#!/bin/bash\nunset SESSION_MANAGER\nunset DBUS_SESSION_BUS_ADDRESS\n[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\nfluxbox &\n' > /root/.vnc/xstartup && \
+    echo '#!/bin/bash\nunset SESSION_MANAGER\nunset DBUS_SESSION_BUS_ADDRESS\n[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\nfluxbox &\nexec bash\n' > /root/.vnc/xstartup && \
     chmod +x /root/.vnc/xstartup
 
 # Create directories for VCMI
