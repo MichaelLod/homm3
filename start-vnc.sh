@@ -23,12 +23,15 @@ sleep 2
 
 # Wait and verify it started
 sleep 3
-if ! pgrep -f "Xvnc.*:1" > /dev/null; then
+# Check for Xtigervnc process (TigerVNC uses Xtigervnc, not Xvnc)
+if ! pgrep -f "Xtigervnc.*:1" > /dev/null && ! pgrep -f "vncserver :1" > /dev/null; then
     echo "ERROR: VNC server process not found after startup" >&2
     echo "Startup log:" >&2
     cat /tmp/vnc-startup.log 2>/dev/null || true
     echo "Checking VNC server logs:" >&2
     cat /root/.vnc/*:1.log 2>/dev/null || echo "No VNC log files found" >&2
+    echo "Current VNC processes:" >&2
+    ps aux | grep -i vnc | grep -v grep >&2 || echo "None found" >&2
     exit 1
 fi
 
@@ -36,8 +39,9 @@ echo "VNC server started successfully" >&2
 
 # Monitor the VNC process (keep script running for supervisor)
 while true; do
-    if ! pgrep -f "Xvnc.*:1" > /dev/null; then
-        echo "VNC server process ended unexpectedly"
+    # Check for both Xtigervnc and vncserver processes
+    if ! pgrep -f "Xtigervnc.*:1" > /dev/null && ! pgrep -f "vncserver :1" > /dev/null; then
+        echo "VNC server process ended unexpectedly" >&2
         exit 1
     fi
     sleep 5
