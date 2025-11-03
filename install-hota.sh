@@ -77,59 +77,38 @@ else
     exit 1
 fi
 
-# Clean up temp directory
-cd /
-rm -rf "$TEMP_DIR" 2>/dev/null || true
-    
-    cd /data/mods
-    
-    # Verify HotA was copied successfully before cleaning up
-    if [ -d "/data/mods/HotA" ] || [ -d "/data/mods/hota" ]; then
-        echo "✅ HotA mod successfully copied to /data/mods/" >&2
-        echo "Cleaning up temporary files..." >&2
-        rm -rf temp_extract hota_installer.exe 2>&1 || {
-            echo "⚠️  Could not remove all temp files, but mod is installed" >&2
-        }
-    else
-        echo "❌ HotA mod directory not found after extraction!" >&2
-        echo "Keeping temp_extract for debugging. Contents:" >&2
-        ls -la temp_extract/ 2>&1 | head -20 >&2
-        exit 1
+# Verify HotA was copied successfully
+if [ -d "/data/mods/HotA" ] || [ -d "/data/mods/hota" ]; then
+    echo "✅ HotA mod successfully copied to /data/mods/" >&2
+    echo "Mod structure:" >&2
+    ls -la /data/mods/ | head -10 >&2
+    if [ -d "/data/mods/hota" ]; then
+        echo "HotA mod contents:" >&2
+        ls -la /data/mods/hota/ | head -10 >&2
+    elif [ -d "/data/mods/HotA" ]; then
+        echo "HotA mod contents:" >&2
+        ls -la /data/mods/HotA/ | head -10 >&2
     fi
-    
-    # Enable HotA mod in VCMI configuration
-    if [ -f /usr/local/bin/enable-hota-mod ]; then
-        echo "Enabling HotA mod in VCMI configuration..."
-        /usr/local/bin/enable-hota-mod || echo "⚠️  Could not enable mod automatically, enable manually in VCMI Mod Manager"
-    fi
-    
-    # Verify HotA mod is installed correctly
-    if [ -d "/data/mods/HotA" ] || [ -d "/data/mods/hota" ]; then
-        echo "✅ HotA mod installed to /data/mods/"
-        echo "Mod structure:"
-        ls -la /data/mods/ | head -10
-        if [ -d "/data/mods/HotA" ]; then
-            echo "HotA mod contents:"
-            ls -la /data/mods/HotA/ | head -10
-        fi
-    else
-        echo "⚠️  HotA mod directory not found after installation"
-        echo "Available in /data/mods/:"
-        ls -la /data/mods/
-    fi
-    
 else
-    echo "⚠️  Could not extract with unzip. The .exe might need to be run on Windows."
-    echo ""
-    echo "Alternative: Extract the .exe on Windows/Mac and upload the extracted 'Mods' folder"
-    echo "You can use 7-Zip or WinRAR to extract the .exe file"
+    echo "❌ HotA mod directory not found after installation!" >&2
+    echo "Available in /data/mods/:" >&2
+    ls -la /data/mods/ 2>&1 | head -10 >&2
     exit 1
 fi
 
-echo ""
-echo "✅ Installation complete!"
-echo "Next steps:"
-echo "1. Restart VCMI"
-echo "2. Open Mod Manager in VCMI"
-echo "3. Enable the HotA mod"
+# Clean up temp directory
+cd /
+rm -rf "$TEMP_DIR" 2>/dev/null || true
+
+# Enable HotA mod in VCMI configuration
+if [ -f /usr/local/bin/enable-hota-mod ]; then
+    echo "Enabling HotA mod in VCMI configuration..." >&2
+    /usr/local/bin/enable-hota-mod 2>&1 || echo "⚠️  Could not enable mod automatically, enable manually in VCMI Mod Manager" >&2
+fi
+
+echo "" >&2
+echo "✅ Installation complete!" >&2
+echo "Next steps:" >&2
+echo "1. Restart VCMI (if it's running)" >&2
+echo "2. The mod should be automatically enabled in VCMI configuration" >&2
 
