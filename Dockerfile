@@ -70,20 +70,28 @@ RUN mkdir -p /root/.vnc && \
 # Create directories for VCMI
 RUN mkdir -p /opt/vcmi /app/saves /app/config
 
-# Build VCMI
+# Build VCMI - split into separate layers for better caching
 WORKDIR /opt
-RUN git clone --depth 1 --recursive https://github.com/vcmi/vcmi.git vcmi-src \
-    && cd vcmi-src \
-    && mkdir build && cd build \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release \
-    && cmake --build . -j$(nproc) \
-    && cmake --install . --prefix /opt/vcmi \
-    && cd /opt && rm -rf vcmi-src
+# Layer 1: Clone VCMI source (cached unless VCMI repo changes)
+RUN git clone --depth 1 --recursive https://github.com/vcmi/vcmi.git vcmi-src
+# Layer 2: Configure CMake (cached unless VCMI source or build system changes)
+WORKDIR /opt/vcmi-src
+RUN mkdir build
+WORKDIR /opt/vcmi-src/build
+RUN cmake .. -DCMAKE_BUILD_TYPE=Release
+# Layer 3: Build VCMI (cached unless source or CMake config changes)
+RUN cmake --build . -j$(nproc)
+# Layer 4: Install VCMI (cached unless build artifacts change)
+RUN cmake --install . --prefix /opt/vcmi
+# Layer 5: Clean up source (this layer is cheap, but keeps image size smaller)
+WORKDIR /opt
+RUN rm -rf /opt/vcmi-src
 
 # Set up VCMI data directory structure
 # VCMI will look for data files in ~/.vcmi/Data or configurable paths
 RUN mkdir -p /root/.vcmi
 
+# Application files - these come last so they don't invalidate the VCMI build cache
 # Set up supervisor for managing services
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
