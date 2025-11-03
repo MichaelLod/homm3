@@ -22,18 +22,23 @@ start_vcmi() {
 sleep 5
 start_vcmi
 
-# Keep session alive and restart VCMI if it crashes
+# Keep session alive and restart VCMI if it crashes or exits
 while true; do
     # Wait a bit before checking
-    sleep 10
+    sleep 5
     
-    # Check if VCMI is still running
+    # Check if VCMI process is still running
+    # Use wait instead of kill -0 to catch the exit status
     if ! kill -0 $VCMI_PID 2>/dev/null; then
-        echo "VCMI process ended, restarting..." >&2
+        # Process has ended, wait for it to fully exit and get exit code
+        wait $VCMI_PID 2>/dev/null
+        EXIT_CODE=$?
+        echo "VCMI process ended (exit code: $EXIT_CODE), restarting in 3 seconds..." >&2
+        sleep 3
         start_vcmi
     fi
     
-    # Sleep for a longer period
-    sleep 3600
+    # Sleep for a shorter period for more responsive restart
+    sleep 5
 done
 
