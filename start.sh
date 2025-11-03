@@ -59,6 +59,15 @@ if [ ! -L ~/.vcmi/Mods ]; then
     ln -sf /data/mods ~/.vcmi/Mods
 fi
 
+# Auto-install HotA mod if not already installed (only once)
+if [ ! -d /data/mods/HotA ] && [ ! -d /data/mods/hota ] && [ ! -f /data/mods/.hota-installed ]; then
+    echo "HotA mod not found, attempting automatic installation..."
+    /install-hota.sh || {
+        echo "⚠️  HotA auto-installation failed. You can run /install-hota.sh manually later."
+    }
+    touch /data/mods/.hota-installed 2>/dev/null || true
+fi
+
 # Create VCMI config directory link (also in /data volume)
 if [ ! -L ~/.config/vcmi ]; then
     mkdir -p ~/.config /data/config

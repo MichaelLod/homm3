@@ -1,6 +1,12 @@
 #!/bin/bash
 # Download and extract HotA mod from Google Drive
 
+# Check if already installed
+if [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
+    echo "✅ HotA mod already installed"
+    exit 0
+fi
+
 echo "Downloading HotA installer from Google Drive..."
 cd /data/mods
 
