@@ -90,8 +90,17 @@ elif [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
         echo "   ✅ HotA mod already enabled" >&2
     fi
 else
-    echo "⚠️  HotA status unclear - checking..." >&2
-    ls -la /data/mods/ 2>&1 | head -10 >&2 || echo "   /data/mods/ not accessible" >&2
+    # HotA might be partially installed (installer exists but extraction failed)
+    if [ -f /data/mods/.hota-installed ] && [ -f /data/mods/hota_installer.exe ]; then
+        echo "⚠️  HotA installer exists but mod not extracted. Retrying extraction..." >&2
+        echo "   This suggests a previous extraction failed. Will retry..." >&2
+        # Remove the marker so it will retry
+        rm -f /data/mods/.hota-installed 2>/dev/null || true
+        touch /data/mods/.hota-install-queued 2>/dev/null || true
+    else
+        echo "⚠️  HotA status unclear - checking..." >&2
+        ls -la /data/mods/ 2>&1 | head -10 >&2 || echo "   /data/mods/ not accessible" >&2
+    fi
 fi
 
 # Create VCMI config directory link (also in /data volume)

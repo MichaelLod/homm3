@@ -63,43 +63,84 @@ echo "✅ Downloaded HotA installer (size: ${FILE_SIZE} bytes)" >&2
 echo "Attempting to extract..." >&2
 
 # Try to extract - many .exe installers are ZIP archives
+echo "Creating temp_extract directory..." >&2
 mkdir -p temp_extract
 cd temp_extract
 
+echo "Extracting hota_installer.exe..." >&2
 # Try unzip first (most .exe installers are self-extracting ZIPs)
-if unzip -o ../hota_installer.exe 2>/dev/null; then
-    echo "✅ Successfully extracted with unzip"
+if unzip -o ../hota_installer.exe 2>&1 | tee /tmp/hota-unzip.log; then
+    echo "✅ Successfully extracted with unzip" >&2
+    echo "Extracted contents:" >&2
+    ls -la | head -20 >&2
     
     # Look for HotA mod files
     # HotA usually has a "Mods" folder or "HotA" folder
     # VCMI expects mods in ~/.vcmi/Mods/ (which is symlinked to /data/mods/)
+    MOD_FOUND=false
+    
     if [ -d "Mods" ]; then
-        echo "Found Mods directory, copying to /data/mods..."
+        echo "Found Mods directory!" >&2
+        ls -la Mods/ | head -10 >&2
         # Try to find HotA inside Mods
         if [ -d "Mods/HotA" ]; then
-            cp -r Mods/HotA /data/mods/ 2>/dev/null || true
+            echo "Found Mods/HotA, copying to /data/mods/..." >&2
+            cp -r Mods/HotA /data/mods/ 2>&1 || {
+                echo "❌ Failed to copy Mods/HotA" >&2
+            }
+            MOD_FOUND=true
         elif [ -d "Mods/hota" ]; then
-            cp -r Mods/hota /data/mods/ 2>/dev/null || true
+            echo "Found Mods/hota, copying to /data/mods/..." >&2
+            cp -r Mods/hota /data/mods/ 2>&1 || {
+                echo "❌ Failed to copy Mods/hota" >&2
+            }
+            MOD_FOUND=true
         else
-            # Copy all mods
-            cp -r Mods/* /data/mods/ 2>/dev/null || true
+            echo "Mods directory found but no HotA/hota inside. Copying all mods..." >&2
+            cp -r Mods/* /data/mods/ 2>&1 || {
+                echo "❌ Failed to copy Mods/*" >&2
+            }
+            MOD_FOUND=true
         fi
     elif [ -d "HotA" ]; then
-        echo "Found HotA directory, copying to /data/mods..."
-        cp -r HotA /data/mods/
+        echo "Found HotA directory, copying to /data/mods/..." >&2
+        cp -r HotA /data/mods/ 2>&1 || {
+            echo "❌ Failed to copy HotA" >&2
+            exit 1
+        }
+        MOD_FOUND=true
     elif [ -d "hota" ]; then
-        echo "Found hota directory, copying to /data/mods..."
-        cp -r hota /data/mods/
-    else
-        echo "⚠️  Extracted but mod structure unclear. Contents:"
-        ls -la | head -20
-        echo ""
-        echo "Please check /data/mods/temp_extract/ and manually copy the HotA mod folder"
-        exit 0
+        echo "Found hota directory, copying to /data/mods/..." >&2
+        cp -r hota /data/mods/ 2>&1 || {
+            echo "❌ Failed to copy hota" >&2
+            exit 1
+        }
+        MOD_FOUND=true
+    fi
+    
+    if [ "$MOD_FOUND" = "false" ]; then
+        echo "⚠️  Extracted but mod structure unclear. Full contents:" >&2
+        find . -type d -maxdepth 2 | head -20 >&2
+        echo "" >&2
+        echo "Please check /data/mods/temp_extract/ and manually copy the HotA mod folder" >&2
+        exit 1
     fi
     
     cd /data/mods
-    rm -rf temp_extract hota_installer.exe
+    
+    # Verify HotA was copied successfully before cleaning up
+    if [ -d "/data/mods/HotA" ] || [ -d "/data/mods/hota" ]; then
+        echo "✅ HotA mod successfully copied to /data/mods/" >&2
+        echo "Cleaning up temporary files..." >&2
+        rm -rf temp_extract hota_installer.exe 2>&1 || {
+            echo "⚠️  Could not remove all temp files, but mod is installed" >&2
+        }
+    else
+        echo "❌ HotA mod directory not found after extraction!" >&2
+        echo "Keeping temp_extract for debugging. Contents:" >&2
+        ls -la temp_extract/ 2>&1 | head -20 >&2
+        exit 1
+    fi
     
     # Enable HotA mod in VCMI configuration
     if [ -f /usr/local/bin/enable-hota-mod ]; then
