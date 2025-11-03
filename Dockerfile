@@ -36,7 +36,8 @@ RUN apt-get update && \
 # Install noVNC and websockify
 RUN git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc \
     && git clone --depth 1 https://github.com/novnc/websockify.git /opt/novnc/utils/websockify \
-    && cd /opt/novnc && npm install --production || true
+    && cd /opt/novnc && npm install --production || true \
+    && echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=vnc.html" /><script>window.location.href="vnc.html";</script></head><body>Redirecting to <a href="vnc.html">noVNC</a>...</body></html>' > /opt/novnc/index.html
 
 # Set up VNC
 RUN mkdir -p /root/.vnc && \
