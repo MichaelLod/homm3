@@ -31,6 +31,10 @@ RUN apt-get update && \
     add-apt-repository ppa:vcmi/ppa -y && \
     apt-get update && \
     apt-get install -y vcmi && \
+    # VCMI installs to /usr/games, add symlinks to /usr/bin for convenience
+    ln -sf /usr/games/vcmiclient /usr/bin/vcmiclient && \
+    ln -sf /usr/games/vcmiserver /usr/bin/vcmiserver && \
+    ln -sf /usr/games/vcmieditor /usr/bin/vcmieditor 2>/dev/null || true && \
     rm -rf /var/lib/apt/lists/*
 
 # Install noVNC and websockify
