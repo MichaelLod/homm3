@@ -14,8 +14,11 @@ mkdir -p /data /app/saves /app/config
 # Set up VCMI directory structure
 mkdir -p ~/.vcmi
 
+# All data in one volume: /data with subdirectories
+# Structure: /data/Data (game files), /data/mods (mods), /data/saves (savegames), /data/config (config)
+
 # Link game data directory to persistent storage
-# Users will upload game files to /data which persists across deployments
+# Users will upload game files to /data/Data which persists across deployments
 if [ ! -L ~/.vcmi/Data ]; then
     if [ -d ~/.vcmi/Data ] && [ ! -L ~/.vcmi/Data ]; then
         # If directory exists and isn't a link, move contents to /data
@@ -36,30 +39,34 @@ if [ -d /data/Data ] && ls /data/Data/*.{lod,snd,vid} >/dev/null 2>&1; then
     cp -u /data/Data/*.lod /data/Data/*.snd /data/Data/*.vid /usr/share/games/vcmi/Data/ 2>/dev/null || true
 fi
 
-# Link save directory to persistent storage
+# Link save directory to persistent storage (in /data volume)
 if [ ! -L ~/.vcmi/Saves ]; then
-    mkdir -p /app/saves
-    ln -sf /app/saves ~/.vcmi/Saves
+    mkdir -p /data/saves
+    if [ -d ~/.vcmi/Saves ] && [ ! -L ~/.vcmi/Saves ]; then
+        mv ~/.vcmi/Saves/* /data/saves/ 2>/dev/null || true
+        rmdir ~/.vcmi/Saves
+    fi
+    ln -sf /data/saves ~/.vcmi/Saves
 fi
 
-# Link mods directory to persistent storage
+# Link mods directory to persistent storage (in /data volume)
 if [ ! -L ~/.vcmi/Mods ]; then
-    mkdir -p /app/mods
+    mkdir -p /data/mods
     if [ -d ~/.vcmi/Mods ] && [ ! -L ~/.vcmi/Mods ]; then
-        mv ~/.vcmi/Mods/* /app/mods/ 2>/dev/null || true
+        mv ~/.vcmi/Mods/* /data/mods/ 2>/dev/null || true
         rmdir ~/.vcmi/Mods
     fi
-    ln -sf /app/mods ~/.vcmi/Mods
+    ln -sf /data/mods ~/.vcmi/Mods
 fi
 
-# Create VCMI config directory link
+# Create VCMI config directory link (also in /data volume)
 if [ ! -L ~/.config/vcmi ]; then
-    mkdir -p ~/.config
+    mkdir -p ~/.config /data/config
     if [ -d ~/.config/vcmi ] && [ ! -L ~/.config/vcmi ]; then
-        mv ~/.config/vcmi/* /app/config/ 2>/dev/null || true
+        mv ~/.config/vcmi/* /data/config/ 2>/dev/null || true
         rmdir ~/.config/vcmi
     fi
-    ln -sf /app/config ~/.config/vcmi
+    ln -sf /data/config ~/.config/vcmi
 fi
 
 # Set up VCMI to run in fullscreen mode by default

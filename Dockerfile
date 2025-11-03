@@ -109,10 +109,11 @@ EXPOSE 6080
 WORKDIR /app
 
 # Note: Volumes are configured via Railway dashboard, not Dockerfile VOLUME
-# Railway will mount volumes to:
-# - /data - for HoMM 3 game files
-# - /app/saves - for save games
-# - /app/config - for VCMI configuration
+# Railway will mount one volume to /data with subdirectories:
+# - /data/Data - for HoMM 3 game files
+# - /data/mods - for VCMI mods (HotA, etc.)
+# - /data/saves - for save games
+# - /data/config - for VCMI configuration
 
 CMD ["/start.sh"]
 

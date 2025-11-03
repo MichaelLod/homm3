@@ -12,7 +12,7 @@ echo "  - You need to download the HotA mod files"
 echo "  - HotA is a community mod, download from: https://www.hotacampaign.com/"
 echo "  - Or use the Heroes Launcher which includes HotA"
 echo ""
-echo "Target directory: ~/.vcmi/Mods/ (linked to persistent storage)"
+echo "Target directory: ~/.vcmi/Mods/ (linked to /data/mods in persistent storage)"
 echo ""
 
 read -p "Do you have the HotA mod files ready? (y/n): " has_files

@@ -136,17 +136,25 @@ VCMI supports mods like Horn of the Abyss (HotA). To install mods:
 2. **Manual installation:**
    - Download HotA from: https://www.hotacampaign.com/
    - Or use Heroes Launcher: https://heroescommunity.com/viewforum.php?f=27
-   - Copy mod files to `/app/mods/` (persistent storage)
+   - Copy mod files to `/data/mods/` (persistent storage)
    - Restart VCMI and enable the mod in Mod Manager
 
-Mods are stored in `/app/mods` which persists across deployments.
+Mods are stored in `/data/mods` which persists across deployments.
+
+## Data Structure
+
+All persistent data is stored in the `/data` volume with subdirectories:
+- `/data/Data/` - Game files (.lod, .snd, .vid)
+- `/data/mods/` - VCMI mods (HotA, etc.)
+- `/data/saves/` - Save games
+- `/data/config/` - VCMI configuration
 
 ## Save Games
 
-Save games are automatically persisted in `/app/saves` which is:
+Save games are automatically persisted in `/data/saves` which is:
 - Mounted as a Railway volume
 - Preserved across deployments
-- Located at `~/.vcmi` (symlinked)
+- Located at `~/.vcmi/Saves` (symlinked)
 
 ## Troubleshooting
 
