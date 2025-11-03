@@ -215,6 +215,14 @@ if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ]
                 echo "Attempting to enable HotA mod in VCMI configuration..." >&2
                 /usr/local/bin/enable-hota-mod 2>&1 | tee /tmp/hota-enable.log || echo "Could not enable HotA mod automatically" >&2
                 touch /data/mods/.hota-enabled 2>/dev/null || true
+                
+                # Restart VCMI to load the mod
+                echo "Restarting VCMI to load HotA mod..." >&2
+                pkill -f vcmiclient 2>/dev/null && {
+                    echo "✅ VCMI process terminated, will restart automatically" >&2
+                } || {
+                    echo "⚠️  VCMI process not running yet (will start with mod enabled)" >&2
+                }
             fi
         fi
         
@@ -224,6 +232,15 @@ if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ]
             /usr/local/bin/enable-hota-mod 2>&1 | tee /tmp/hota-enable.log || echo "Could not enable HotA mod automatically" >&2
             rm -f /data/mods/.hota-enable-queued 2>/dev/null || true
             touch /data/mods/.hota-enabled 2>/dev/null || true
+            
+            # Restart VCMI to load the mod
+            echo "Restarting VCMI to load HotA mod..." >&2
+            sleep 5  # Wait a bit to ensure VCMI has started
+            pkill -f vcmiclient 2>/dev/null && {
+                echo "✅ VCMI process terminated, will restart automatically" >&2
+            } || {
+                echo "⚠️  VCMI process not running yet (will start with mod enabled)" >&2
+            }
         fi
     ) &
 fi
