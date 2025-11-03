@@ -22,30 +22,64 @@ else
 fi
 
 echo "Checking HotA mod structure..."
+MOD_ID=""
 if [ -d "$MODS_DIR/HotA" ]; then
     echo "HotA mod directory found:"
     ls -la "$MODS_DIR/HotA" | head -10
     if [ -f "$MODS_DIR/HotA/mod.json" ]; then
         echo "✅ mod.json found in HotA directory"
-        # Try to get mod identifier from mod.json
-        MOD_ID=$(python3 -c "import json; f=open('$MODS_DIR/HotA/mod.json'); d=json.load(f); print(d.get('identifier', '$HOTA_MOD_NAME'))" 2>/dev/null || echo "$HOTA_MOD_NAME")
-        echo "Mod identifier: $MOD_ID"
+        echo "Reading mod.json..." >&2
+        cat "$MODS_DIR/HotA/mod.json" | head -20 >&2
+        # Try to get mod identifier from mod.json (check both 'identifier' and 'id' fields)
+        MOD_ID=$(python3 -c "
+import json
+import sys
+try:
+    with open('$MODS_DIR/HotA/mod.json', 'r') as f:
+        d = json.load(f)
+    # Try identifier first, then id, then fallback to directory name
+    mod_id = d.get('identifier') or d.get('id') or d.get('name') or '$HOTA_MOD_NAME'
+    print(mod_id)
+except Exception as e:
+    print('$HOTA_MOD_NAME', file=sys.stderr)
+" 2>/dev/null || echo "$HOTA_MOD_NAME")
+        echo "Mod identifier from mod.json: $MOD_ID" >&2
     else
         MOD_ID="$HOTA_MOD_NAME"
-        echo "⚠️  mod.json not found, using directory name: $MOD_ID"
+        echo "⚠️  mod.json not found, using directory name: $MOD_ID" >&2
     fi
 elif [ -d "$MODS_DIR/hota" ]; then
     echo "hota mod directory found:"
     ls -la "$MODS_DIR/hota" | head -10
     if [ -f "$MODS_DIR/hota/mod.json" ]; then
         echo "✅ mod.json found in hota directory"
-        MOD_ID=$(python3 -c "import json; f=open('$MODS_DIR/hota/mod.json'); d=json.load(f); print(d.get('identifier', '$HOTA_MOD_NAME'))" 2>/dev/null || echo "$HOTA_MOD_NAME")
-        echo "Mod identifier: $MOD_ID"
+        echo "Reading mod.json..." >&2
+        cat "$MODS_DIR/hota/mod.json" | head -20 >&2
+        # Try to get mod identifier from mod.json
+        MOD_ID=$(python3 -c "
+import json
+import sys
+try:
+    with open('$MODS_DIR/hota/mod.json', 'r') as f:
+        d = json.load(f)
+    # Try identifier first, then id, then fallback to directory name
+    mod_id = d.get('identifier') or d.get('id') or d.get('name') or '$HOTA_MOD_NAME'
+    print(mod_id)
+except Exception as e:
+    print('$HOTA_MOD_NAME', file=sys.stderr)
+" 2>/dev/null || echo "$HOTA_MOD_NAME")
+        echo "Mod identifier from mod.json: $MOD_ID" >&2
     else
         MOD_ID="$HOTA_MOD_NAME"
-        echo "⚠️  mod.json not found, using directory name: $MOD_ID"
+        echo "⚠️  mod.json not found, using directory name: $MOD_ID" >&2
     fi
 fi
+
+# Use the identifier from mod.json if found, otherwise use directory name
+if [ -z "$MOD_ID" ] || [ "$MOD_ID" = "$HOTA_MOD_NAME" ]; then
+    MOD_ID="$HOTA_MOD_NAME"
+fi
+echo "Using mod identifier: $MOD_ID" >&2
 
 echo ""
 echo "Enabling HotA mod in VCMI configuration..."
@@ -69,35 +103,46 @@ try:
 except:
     config = {}
 
-# VCMI uses different formats depending on version
-# Try multiple approaches to enable the mod
+# VCMI configuration format based on research
+# VCMI uses modSettings with the mod identifier from mod.json
+# The key should match the 'identifier' field in mod.json
 
-# Approach 1: modSettings dictionary
+# Primary approach: Use modSettings with the actual identifier from mod.json
 if "modSettings" not in config:
     config["modSettings"] = {}
 
-# Try with both the directory name and the mod identifier
-for mod_key in [mod_name, mod_id, "HotA", "hota"]:
-    config["modSettings"][mod_key] = {
+# Use the identifier from mod.json as the primary key (most important)
+if mod_id:
+    config["modSettings"][mod_id] = {
         "active": True,
         "enabled": True
     }
+    print(f"   Set modSettings['{mod_id}'] = enabled")
 
-# Approach 2: mods array/list
-if "mods" not in config:
-    config["mods"] = []
+# Also set using directory name as fallback
+config["modSettings"][mod_name] = {
+    "active": True,
+    "enabled": True
+}
+print(f"   Set modSettings['{mod_name}'] = enabled")
 
-for mod_key in [mod_name, mod_id, "HotA", "hota"]:
-    if mod_key not in config["mods"]:
-        config["mods"].append(mod_key)
-
-# Approach 3: activeMods array (some VCMI versions)
+# Approach 2: activeMods array (VCMI uses this to list active mods)
 if "activeMods" not in config:
     config["activeMods"] = []
 
-for mod_key in [mod_name, mod_id, "HotA", "hota"]:
-    if mod_key not in config["activeMods"]:
+# Add both identifier and directory name to activeMods
+for mod_key in [mod_id, mod_name]:
+    if mod_key and mod_key not in config["activeMods"]:
         config["activeMods"].append(mod_key)
+        print(f"   Added '{mod_key}' to activeMods")
+
+# Approach 3: mods array (deprecated but some versions might use it)
+if "mods" not in config:
+    config["mods"] = []
+
+for mod_key in [mod_id, mod_name]:
+    if mod_key and mod_key not in config["mods"]:
+        config["mods"].append(mod_key)
 
 # Save config
 with open(config_file, "w") as f:
@@ -119,4 +164,5 @@ fi
 echo ""
 echo "⚠️  VCMI must be restarted for the mod to take effect!"
 echo "   The mod will be active after VCMI restarts."
+
 
