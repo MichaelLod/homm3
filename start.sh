@@ -82,6 +82,21 @@ if [ ! -d /data/mods/HotA ] && [ ! -d /data/mods/hota ] && [ ! -f /data/mods/.ho
     echo "   ✅ HotA installation queued" >&2
 elif [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
     echo "✅ HotA mod found in /data/mods/" >&2
+    
+    # Run diagnostics to understand the mod structure
+    echo "Running HotA mod diagnostics..." >&2
+    if [ -f /data/mods/hota/mod.json ]; then
+        echo "HotA mod.json content:" >&2
+        cat /data/mods/hota/mod.json | head -30 >&2
+        MOD_ID=$(python3 -c "import json; f=open('/data/mods/hota/mod.json'); d=json.load(f); print(d.get('identifier', 'NOT_FOUND'))" 2>/dev/null || echo "NOT_FOUND")
+        echo "Mod identifier from mod.json: $MOD_ID" >&2
+    fi
+    
+    if [ -f /root/.config/vcmi/settings.json ]; then
+        echo "Current VCMI settings.json modSettings:" >&2
+        python3 -c "import json; f=open('/root/.config/vcmi/settings.json'); d=json.load(f); print(json.dumps(d.get('modSettings', {}), indent=2))" 2>/dev/null >&2 || echo "Could not read modSettings" >&2
+    fi
+    
     # HotA is already installed, but ensure it's enabled in VCMI config
     if [ ! -f /data/mods/.hota-enabled ]; then
         echo "   Will enable it in VCMI configuration after startup..." >&2
