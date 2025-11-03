@@ -27,7 +27,11 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     nano \
     xdotool \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
+
+# Install gdown for downloading from Google Drive
+RUN pip3 install --no-cache-dir gdown
 
 # Install VCMI from PPA (pre-built, much faster than building from source)
 RUN apt-get update && \
