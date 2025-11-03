@@ -1,5 +1,6 @@
 #!/bin/bash
-set -e
+# Don't use set -e - we want to continue even if some operations fail
+set +e
 
 # Create VNC password file if it doesn't exist
 if [ ! -f ~/.vnc/passwd ]; then
@@ -9,7 +10,7 @@ if [ ! -f ~/.vnc/passwd ]; then
 fi
 
 # Ensure directories exist
-mkdir -p /data
+mkdir -p /data || true
 
 # Set up VCMI directory structure
 mkdir -p ~/.vcmi
