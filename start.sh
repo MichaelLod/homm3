@@ -62,11 +62,11 @@ fi
 
 # Auto-install HotA mod if not already installed (only once)
 # Run in background to not block startup, and don't fail if it errors
+# Note: This runs AFTER supervisor starts, so it won't block container startup
 if [ ! -d /data/mods/HotA ] && [ ! -d /data/mods/hota ] && [ ! -f /data/mods/.hota-installed ]; then
-    echo "HotA mod not found, attempting automatic installation in background..."
-    # Run in background and don't let errors stop startup
-    (/install-hota.sh 2>&1 | tee /tmp/hota-install.log || echo "HotA installation failed, check /tmp/hota-install.log") &
-    touch /data/mods/.hota-installed 2>/dev/null || true
+    echo "HotA mod not found, will attempt automatic installation after startup..."
+    # Mark as attempted so we don't try multiple times
+    touch /data/mods/.hota-install-queued 2>/dev/null || true
 fi
 
 # Create VCMI config directory link (also in /data volume)
@@ -141,6 +141,16 @@ fi
 
 # Ensure PORT is set (Railway provides this, default to 6080)
 export PORT="${PORT:-6080}"
+
+# Start HotA installation in background if queued (after supervisor starts)
+if [ -f /data/mods/.hota-install-queued ]; then
+    (
+        sleep 10  # Wait for supervisor to be ready
+        /install-hota.sh 2>&1 | tee /tmp/hota-install.log || echo "HotA installation failed, check /tmp/hota-install.log"
+        rm -f /data/mods/.hota-install-queued 2>/dev/null || true
+        touch /data/mods/.hota-installed 2>/dev/null || true
+    ) &
+fi
 
 # Start supervisor (which will start VNC and noVNC)
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
