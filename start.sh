@@ -31,9 +31,9 @@ fi
 # Copy game files to VCMI standard location (/usr/share/games/vcmi/Data)
 # VCMI checks standard system paths before ~/.vcmi/Data
 mkdir -p /usr/share/games/vcmi/Data
-if [ -d /data/Data ] && [ "$(ls -A /data/Data/*.{lod,snd,vid} 2>/dev/null)" ]; then
+if [ -d /data/Data ] && ls /data/Data/*.{lod,snd,vid} >/dev/null 2>&1; then
     # Copy game files if they exist in persistent storage
-    cp -u /data/Data/*.{lod,snd,vid} /usr/share/games/vcmi/Data/ 2>/dev/null || true
+    cp -u /data/Data/*.lod /data/Data/*.snd /data/Data/*.vid /usr/share/games/vcmi/Data/ 2>/dev/null || true
 fi
 
 # Link save directory to persistent storage
