@@ -53,7 +53,7 @@ RUN echo '#!/bin/bash\n# Start VCMI for new game (skip auto-load)\ntouch "$HOME/
 
 # Set up VNC
 RUN mkdir -p /root/.vnc && \
-    echo '#!/bin/bash\nunset SESSION_MANAGER\nunset DBUS_SESSION_BUS_ADDRESS\n[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\nfluxbox &\nsleep 3\n# Start VCMI automatically, loading latest hotseat save if available\n/usr/local/bin/vcmiclient-autoload &\n# Keep session alive\nwhile true; do sleep 3600; done\n' > /root/.vnc/xstartup && \
+    echo '#!/bin/bash\nunset SESSION_MANAGER\nunset DBUS_SESSION_BUS_ADDRESS\n[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\nfluxbox &\nsleep 3\n# Start VCMI automatically (VCMI will automatically resume last game if available)\nDISPLAY=:1 vcmiclient &\n# Keep session alive\nwhile true; do sleep 3600; done\n' > /root/.vnc/xstartup && \
     chmod +x /root/.vnc/xstartup
 
 # Create directories for VCMI (VCMI from PPA installs to /usr/games and /usr/bin)
