@@ -87,7 +87,7 @@ RUN mkdir -p /root/.vnc && \
     chmod +x /root/.vnc/xstartup
 
 # Create directories for VCMI (VCMI from PPA installs to /usr/games and /usr/bin)
-RUN mkdir -p /app/saves /app/config
+# Note: All persistent data is now in /data volume (created at runtime)
 
 # Set up VCMI data directory structure
 # VCMI will look for data files in ~/.vcmi/Data or configurable paths

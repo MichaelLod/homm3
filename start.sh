@@ -60,11 +60,11 @@ if [ ! -L ~/.vcmi/Mods ]; then
 fi
 
 # Auto-install HotA mod if not already installed (only once)
+# Run in background to not block startup, and don't fail if it errors
 if [ ! -d /data/mods/HotA ] && [ ! -d /data/mods/hota ] && [ ! -f /data/mods/.hota-installed ]; then
-    echo "HotA mod not found, attempting automatic installation..."
-    /install-hota.sh || {
-        echo "⚠️  HotA auto-installation failed. You can run /install-hota.sh manually later."
-    }
+    echo "HotA mod not found, attempting automatic installation in background..."
+    # Run in background and don't let errors stop startup
+    (/install-hota.sh 2>&1 | tee /tmp/hota-install.log || echo "HotA installation failed, check /tmp/hota-install.log") &
     touch /data/mods/.hota-installed 2>/dev/null || true
 fi
 
