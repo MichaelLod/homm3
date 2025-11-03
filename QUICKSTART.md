@@ -47,7 +47,7 @@ Files will be saved to `/data/Data/` (persistent storage) and automatically link
 ## 6. Run VCMI
 
 1. In desktop, right-click → VCMI Client
-2. Or in terminal: `/opt/vcmi/bin/vcmiclient`
+2. Or in terminal: `vcmiclient`
 
 ## Save Games
 
@@ -57,11 +57,11 @@ Save games are automatically saved to `/app/saves` which persists across deploym
 
 - **Can't connect?** Check Railway service is running
 - **VCMI won't start?** Verify HoMM 3 files are in `~/.vcmi/Data/`
-- **Build failed?** VCMI build takes ~10-15 minutes and requires significant resources
+- **Build failed?** Build should be fast (~2-5 minutes) using pre-built VCMI from PPA
 
 ## Notes
 
-- First build may take 15-20 minutes
+- Build should complete in 2-5 minutes using pre-built VCMI
 - VCMI needs original HoMM 3 game files (Data/, Maps/, MP3/)
 - Save games persist in `/app/saves` volume
 

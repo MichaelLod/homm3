@@ -118,14 +118,10 @@ Required files from your HoMM 3 installation:
 Once your game files are in place:
 
 1. Open a terminal in the desktop
-2. Run: `/opt/vcmi/bin/vcmiclient` or `/opt/vcmi/bin/vcmiserver`
+2. Run: `vcmiclient` or `vcmiserver`
 3. The game should launch!
 
-Or create a desktop shortcut:
-```bash
-echo '/opt/vcmi/bin/vcmiclient' > ~/Desktop/VCMI.sh
-chmod +x ~/Desktop/VCMI.sh
-```
+Or use the desktop shortcut created automatically, or right-click → VCMI Client from the Fluxbox menu.
 
 ## Save Games
 
@@ -175,7 +171,7 @@ Then open `http://localhost:6080` in your browser.
 
 ### Updating VCMI
 
-To get the latest VCMI version, rebuild the Docker image. The Dockerfile clones the latest from GitHub.
+To get the latest VCMI version, rebuild the Docker image. The Dockerfile installs VCMI from the official PPA, which is automatically updated.
 
 ## Security Notes
 

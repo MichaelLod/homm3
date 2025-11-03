@@ -7,7 +7,7 @@ cat > ~/Desktop/VCMI.sh << 'EOF'
 #!/bin/bash
 cd ~
 export DISPLAY=:1
-/opt/vcmi/bin/vcmiclient
+vcmiclient
 EOF
 
 chmod +x ~/Desktop/VCMI.sh
@@ -17,8 +17,8 @@ mkdir -p ~/.fluxbox
 cat > ~/.fluxbox/menu << 'EOF'
 [begin] (Fluxbox)
   [exec] (Terminal) {xterm}
-  [exec] (VCMI Client) {/opt/vcmi/bin/vcmiclient}
-  [exec] (VCMI Server) {xterm -e /opt/vcmi/bin/vcmiserver}
+  [exec] (VCMI Client) {vcmiclient}
+  [exec] (VCMI Server) {xterm -e vcmiserver}
   [separator]
   [exit] (Exit)
 [end]
