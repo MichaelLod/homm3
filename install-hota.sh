@@ -2,41 +2,65 @@
 # Download and extract HotA mod from Google Drive
 set +e  # Don't fail on errors
 
+echo "=========================================" >&2
+echo "HotA Installation Script" >&2
+echo "=========================================" >&2
+
 # Check if already installed
 if [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
-    echo "✅ HotA mod already installed"
+    echo "✅ HotA mod already installed" >&2
     exit 0
 fi
 
 # Ensure /data/mods exists
+echo "Creating /data/mods directory..." >&2
 mkdir -p /data/mods || {
-    echo "⚠️  Cannot create /data/mods - volume may not be mounted"
+    echo "❌ Cannot create /data/mods - volume may not be mounted" >&2
     exit 1
 }
 
-echo "Downloading HotA installer from Google Drive..."
+echo "✅ /data/mods directory exists" >&2
+echo "Downloading HotA installer from Google Drive..." >&2
 cd /data/mods || {
-    echo "⚠️  Cannot access /data/mods"
+    echo "❌ Cannot access /data/mods" >&2
     exit 1
 }
 
 FILE_ID="1U6pLo7mtAQYUrfYXxWPGZXnvXG6nAxA2"
+URL="https://drive.google.com/uc?id=${FILE_ID}"
 
 # Install gdown if needed
 if ! command -v gdown &> /dev/null; then
-    pip3 install gdown --quiet
+    echo "Installing gdown..." >&2
+    pip3 install --user gdown --quiet || pip3 install gdown --quiet || {
+        echo "❌ Failed to install gdown" >&2
+        exit 1
+    }
 fi
 
+echo "✅ gdown is available" >&2
+echo "Downloading HotA installer (this may take a few minutes)..." >&2
+echo "URL: ${URL}" >&2
+
 # Download HotA installer
-gdown "https://drive.google.com/uc?id=${FILE_ID}" -O hota_installer.exe
+gdown "${URL}" -O hota_installer.exe 2>&1 || {
+    echo "❌ Failed to download HotA installer" >&2
+    echo "   Trying alternative download method..." >&2
+    # Try with wget as fallback
+    wget "${URL}" -O hota_installer.exe 2>&1 || {
+        echo "❌ Failed to download with wget as well" >&2
+        exit 1
+    }
+}
 
 if [ ! -f hota_installer.exe ]; then
-    echo "❌ Failed to download HotA installer"
+    echo "❌ Failed to download HotA installer" >&2
     exit 1
 fi
 
-echo "✅ Downloaded HotA installer"
-echo "Attempting to extract..."
+FILE_SIZE=$(stat -c%s hota_installer.exe 2>/dev/null || stat -f%z hota_installer.exe 2>/dev/null || echo "unknown")
+echo "✅ Downloaded HotA installer (size: ${FILE_SIZE} bytes)" >&2
+echo "Attempting to extract..." >&2
 
 # Try to extract - many .exe installers are ZIP archives
 mkdir -p temp_extract

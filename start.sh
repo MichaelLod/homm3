@@ -69,16 +69,29 @@ fi
 # Auto-install HotA mod if not already installed (only once)
 # Run in background to not block startup, and don't fail if it errors
 # Note: This runs AFTER supervisor starts, so it won't block container startup
+mkdir -p /data/mods 2>/dev/null || true
+
 if [ ! -d /data/mods/HotA ] && [ ! -d /data/mods/hota ] && [ ! -f /data/mods/.hota-installed ]; then
-    echo "HotA mod not found, will attempt automatic installation after startup..."
+    echo "⚠️  HotA mod not found, will attempt automatic installation after startup..." >&2
+    echo "   Checking /data/mods/..." >&2
+    ls -la /data/mods/ 2>&1 | head -5 >&2 || echo "   /data/mods/ is empty or doesn't exist" >&2
     # Mark as attempted so we don't try multiple times
-    touch /data/mods/.hota-install-queued 2>/dev/null || true
+    touch /data/mods/.hota-install-queued 2>/dev/null || {
+        echo "⚠️  Could not create .hota-install-queued marker" >&2
+    }
+    echo "   ✅ HotA installation queued" >&2
 elif [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
+    echo "✅ HotA mod found in /data/mods/" >&2
     # HotA is already installed, but ensure it's enabled in VCMI config
     if [ ! -f /data/mods/.hota-enabled ]; then
-        echo "HotA mod found, will enable it in VCMI configuration after startup..."
+        echo "   Will enable it in VCMI configuration after startup..." >&2
         touch /data/mods/.hota-enable-queued 2>/dev/null || true
+    else
+        echo "   ✅ HotA mod already enabled" >&2
     fi
+else
+    echo "⚠️  HotA status unclear - checking..." >&2
+    ls -la /data/mods/ 2>&1 | head -10 >&2 || echo "   /data/mods/ not accessible" >&2
 fi
 
 # Create VCMI config directory link (also in /data volume)
@@ -176,10 +189,17 @@ if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ]
         
         # Install HotA mod if queued
         if [ -f /data/mods/.hota-install-queued ]; then
+            echo "=========================================" >&2
             echo "Starting HotA installation..." >&2
-            /install-hota.sh 2>&1 | tee /tmp/hota-install.log || echo "HotA installation failed, check /tmp/hota-install.log" >&2
+            echo "=========================================" >&2
+            /install-hota.sh 2>&1 | tee -a /tmp/hota-install.log || {
+                echo "❌ HotA installation failed, check /tmp/hota-install.log" >&2
+                echo "Last 20 lines of log:" >&2
+                tail -20 /tmp/hota-install.log 2>/dev/null >&2 || true
+            }
             rm -f /data/mods/.hota-install-queued 2>/dev/null || true
             touch /data/mods/.hota-installed 2>/dev/null || true
+            echo "HotA installation process completed (check logs for details)" >&2
             
             # Try to enable HotA mod if it was successfully installed
             if [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
