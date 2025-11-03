@@ -1,5 +1,6 @@
 #!/bin/bash
 # Download and extract HotA mod from Google Drive
+set +e  # Don't fail on errors
 
 # Check if already installed
 if [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
@@ -7,8 +8,17 @@ if [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
     exit 0
 fi
 
+# Ensure /data/mods exists
+mkdir -p /data/mods || {
+    echo "⚠️  Cannot create /data/mods - volume may not be mounted"
+    exit 1
+}
+
 echo "Downloading HotA installer from Google Drive..."
-cd /data/mods
+cd /data/mods || {
+    echo "⚠️  Cannot access /data/mods"
+    exit 1
+}
 
 FILE_ID="1U6pLo7mtAQYUrfYXxWPGZXnvXG6nAxA2"
 
