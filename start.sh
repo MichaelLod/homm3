@@ -88,6 +88,10 @@ elif [ -d /data/mods/HotA ] || [ -d /data/mods/hota ]; then
         touch /data/mods/.hota-enable-queued 2>/dev/null || true
     else
         echo "   ✅ HotA mod already enabled" >&2
+        # Even if already enabled, ensure VCMI restarts to load it
+        # This is especially important after a fresh deployment
+        echo "   Will restart VCMI after startup to ensure mod is loaded..." >&2
+        touch /data/mods/.hota-restart-queued 2>/dev/null || true
     fi
 else
     # HotA might be partially installed (installer exists but extraction failed)
@@ -177,7 +181,7 @@ fi
 export PORT="${PORT:-6080}"
 
 # Start file downloads in background if queued (after supervisor starts)
-if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ] || [ -f /data/mods/.hota-enable-queued ]; then
+if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ] || [ -f /data/mods/.hota-enable-queued ] || [ -f /data/mods/.hota-restart-queued ]; then
     (
         sleep 10  # Wait for supervisor to be ready
         
@@ -241,6 +245,18 @@ if [ -f /data/.homm3-download-queued ] || [ -f /data/mods/.hota-install-queued ]
             } || {
                 echo "⚠️  VCMI process not running yet (will start with mod enabled)" >&2
             }
+        fi
+        
+        # Restart VCMI if queued (for already enabled mods that need a restart)
+        if [ -f /data/mods/.hota-restart-queued ]; then
+            echo "Restarting VCMI to load already-enabled HotA mod..." >&2
+            sleep 10  # Wait a bit longer to ensure VCMI has fully started
+            pkill -f vcmiclient 2>/dev/null && {
+                echo "✅ VCMI process terminated, will restart automatically with HotA mod" >&2
+            } || {
+                echo "⚠️  VCMI process not found (may have already restarted)" >&2
+            }
+            rm -f /data/mods/.hota-restart-queued 2>/dev/null || true
         fi
     ) &
 fi
