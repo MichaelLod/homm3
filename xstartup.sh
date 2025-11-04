@@ -10,15 +10,21 @@ sleep 3
 ensure_hota_enabled() {
     echo "Checking HOTA mod status..." >&2
     
+    # Check if mods directory is accessible (don't block if /data isn't mounted)
+    if [ ! -d "$HOME/.vcmi/Mods" ] 2>/dev/null; then
+        echo "ℹ️  Mods directory not accessible yet, skipping HOTA check" >&2
+        return 0  # Don't fail, just skip
+    fi
+    
     # Check if HOTA mod is installed
     if [ -d "$HOME/.vcmi/Mods/HotA" ] || [ -d "$HOME/.vcmi/Mods/hota" ]; then
         echo "✅ HOTA mod found in Mods directory" >&2
         
         # Check if HOTA is already enabled in VCMI config
         VCMI_CONFIG="$HOME/.config/vcmi/settings.json"
-        if [ -f "$VCMI_CONFIG" ]; then
-            # Check if HOTA is enabled in config
-            if python3 -c "
+        if [ -f "$VCMI_CONFIG" ] 2>/dev/null; then
+            # Check if HOTA is enabled in config (with timeout to prevent hanging)
+            if timeout 5 python3 -c "
 import json
 import sys
 try:
@@ -56,21 +62,25 @@ except:
             echo "⚠️  VCMI config not found, will enable HOTA mod..." >&2
         fi
         
-        # Enable HOTA mod using the enable script
+        # Enable HOTA mod using the enable script (with timeout to prevent hanging)
         if [ -f /usr/local/bin/enable-hota-mod ]; then
-            /usr/local/bin/enable-hota-mod >&2
-            if [ $? -eq 0 ]; then
+            timeout 30 /usr/local/bin/enable-hota-mod >&2
+            ENABLE_EXIT=$?
+            if [ $ENABLE_EXIT -eq 0 ]; then
                 echo "✅ HOTA mod enabled successfully" >&2
                 # Small wait to ensure config file is fully written
                 sleep 1
                 return 0
+            elif [ $ENABLE_EXIT -eq 124 ]; then
+                echo "⚠️  HOTA mod enable script timed out (non-fatal)" >&2
+                return 0  # Don't fail startup, just continue
             else
-                echo "⚠️  Failed to enable HOTA mod automatically" >&2
-                return 1
+                echo "⚠️  Failed to enable HOTA mod automatically (non-fatal)" >&2
+                return 0  # Don't fail startup, just continue
             fi
         else
-            echo "⚠️  enable-hota-mod script not found" >&2
-            return 1
+            echo "⚠️  enable-hota-mod script not found (non-fatal)" >&2
+            return 0  # Don't fail startup
         fi
     else
         echo "ℹ️  HOTA mod not found in Mods directory" >&2
@@ -105,20 +115,23 @@ force_restart_vcmi() {
 sleep 5
 
 # Wait a bit if HOTA installation is in progress (from background task in start.sh)
-if [ -f /data/mods/.hota-install-queued ]; then
-    echo "⏳ HOTA installation in progress, waiting up to 60 seconds..." >&2
-    for i in {1..12}; do
+# Use timeout to prevent hanging if /data isn't mounted
+if [ -d /data ] && [ -f /data/mods/.hota-install-queued ] 2>/dev/null; then
+    echo "⏳ HOTA installation in progress, waiting up to 30 seconds..." >&2
+    # Reduced wait time and use timeout to prevent blocking
+    for i in {1..6}; do
         sleep 5
-        if [ ! -f /data/mods/.hota-install-queued ]; then
+        if [ ! -f /data/mods/.hota-install-queued ] 2>/dev/null; then
             echo "✅ HOTA installation completed" >&2
             break
         fi
     done
     # Give it a moment for the enable script to run
-    sleep 3
+    sleep 2
 fi
 
 # Check and enable HOTA mod before starting VCMI
+# Don't block if /data isn't available or mod isn't installed
 ensure_hota_enabled
 
 # Start VCMI automatically (VCMI will automatically resume last game if available)
