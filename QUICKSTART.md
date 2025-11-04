@@ -74,11 +74,15 @@ Save games are automatically saved to `/app/saves` which persists across deploym
 - **Can't connect?** Check Railway service is running
 - **VCMI won't start?** Verify HoMM 3 files are in `~/.vcmi/Data/`
 - **Build failed?** Build should be fast (~2-5 minutes) using pre-built VCMI from PPA
-- **HotA mod not loading?** 
+- **HotA mod not loading / Cove town not appearing?** 
+  - Run comprehensive debug: `/usr/local/bin/debug-hota` (shows detailed diagnostics)
+  - Test and fix mod loading: `/usr/local/bin/test-vcmi-mod-loading` (auto-fixes config issues)
   - Check if mod is installed: `ls -la ~/.vcmi/Mods/`
   - Check if mod is enabled: Check `/root/.config/vcmi/settings.json` for `modSettings` or `activeMods`
   - Restart VCMI: `pkill -9 vcmiclient` (it will auto-restart)
   - Manual enable: Run `/usr/local/bin/enable-hota-mod`
+  - **Important**: Start a NEW game (not load existing) - HotA features appear in new games
+  - **Note**: Not all maps support Cove town - use a map that includes HotA/Cove faction
 
 ## Notes
 

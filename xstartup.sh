@@ -135,6 +135,11 @@ fi
 # Don't block if /data isn't available or mod isn't installed
 ensure_hota_enabled
 
+# Verify and fix mod configuration if needed (non-blocking)
+if [ -f /usr/local/bin/test-vcmi-mod-loading ]; then
+    timeout 10 /usr/local/bin/test-vcmi-mod-loading >&2 || echo "⚠️  Mod loading test timed out or failed (non-fatal)" >&2
+fi
+
 # Start VCMI automatically (VCMI will automatically resume last game if available)
 # HOTA mod should now be loaded automatically
 start_vcmi

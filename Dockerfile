@@ -62,7 +62,9 @@ COPY enable-hota-mod.sh /usr/local/bin/enable-hota-mod
 COPY restart-vcmi.sh /usr/local/bin/restart-vcmi
 COPY check-vcmi-mods.sh /usr/local/bin/check-vcmi-mods
 COPY run-diagnostics.sh /usr/local/bin/run-diagnostics
-RUN chmod +x /usr/local/bin/vcmiclient-autoload /usr/local/bin/vcmiclient-newgame /root/.vnc/xstartup /usr/local/bin/download-homm3-files /usr/local/bin/enable-hota-mod /usr/local/bin/restart-vcmi /usr/local/bin/check-vcmi-mods /usr/local/bin/run-diagnostics
+COPY debug-hota.sh /usr/local/bin/debug-hota
+COPY test-vcmi-mod-loading.sh /usr/local/bin/test-vcmi-mod-loading
+RUN chmod +x /usr/local/bin/vcmiclient-autoload /usr/local/bin/vcmiclient-newgame /root/.vnc/xstartup /usr/local/bin/download-homm3-files /usr/local/bin/enable-hota-mod /usr/local/bin/restart-vcmi /usr/local/bin/check-vcmi-mods /usr/local/bin/run-diagnostics /usr/local/bin/debug-hota /usr/local/bin/test-vcmi-mod-loading
 
 # Create directories for VCMI (VCMI from PPA installs to /usr/games and /usr/bin)
 # Note: All persistent data is now in /data volume (created at runtime)
