@@ -39,15 +39,16 @@ try:
     else:
         active_mods_list = active_mods if isinstance(active_mods, list) else []
     
-    # Check both HotA and hota (case variations) in modSettings (primary)
-    # and activeMods (secondary)
+    # Check lowercase "hota" first (VCMI standard), then case variations
+    # Primary check: lowercase "hota" in modSettings
     hota_enabled = (
-        mod_settings.get('HotA', {}).get('enabled', False) or
-        mod_settings.get('HotA', {}).get('active', False) or
         mod_settings.get('hota', {}).get('enabled', False) or
         mod_settings.get('hota', {}).get('active', False) or
-        'HotA' in active_mods_list or
-        'hota' in active_mods_list
+        'hota' in active_mods_list or
+        # Fallback to case variations for compatibility
+        mod_settings.get('HotA', {}).get('enabled', False) or
+        mod_settings.get('HotA', {}).get('active', False) or
+        'HotA' in active_mods_list
     )
     sys.exit(0 if hota_enabled else 1)
 except:

@@ -12,14 +12,19 @@ if [ ! -d "$MODS_DIR/HotA" ] && [ ! -d "$MODS_DIR/hota" ]; then
 fi
 
 # Determine HotA mod name
-if [ -d "$MODS_DIR/HotA" ]; then
-    HOTA_MOD_NAME="HotA"
-elif [ -d "$MODS_DIR/hota" ]; then
+# VCMI typically uses lowercase directory names as identifiers
+if [ -d "$MODS_DIR/hota" ]; then
     HOTA_MOD_NAME="hota"
+elif [ -d "$MODS_DIR/HotA" ]; then
+    HOTA_MOD_NAME="HotA"
 else
     echo "⚠️  Could not determine HotA mod name"
     exit 0
 fi
+
+# Always use lowercase for VCMI mod identifier (VCMI is case-sensitive but prefers lowercase)
+# This ensures consistency with VCMI's mod loading system
+HOTA_MOD_IDENTIFIER="hota"
 
 echo "Checking HotA mod structure..."
 MOD_ID=""
@@ -77,12 +82,17 @@ fi
 
 # VCMI uses directory name as identifier if no identifier field in mod.json
 # Since mod.json doesn't have identifier, we MUST use the directory name
-if [ -z "$MOD_ID" ] || [ "$MOD_ID" = "NOT_FOUND" ] || [ "$MOD_ID" = "$HOTA_MOD_NAME" ]; then
-    MOD_ID="$HOTA_MOD_NAME"
-    echo "⚠️  No identifier in mod.json, using directory name: $MOD_ID" >&2
+# Use lowercase "hota" as the identifier (VCMI prefers lowercase for mod identifiers)
+if [ -z "$MOD_ID" ] || [ "$MOD_ID" = "NOT_FOUND" ]; then
+    MOD_ID="$HOTA_MOD_IDENTIFIER"
+    echo "⚠️  No identifier in mod.json, using lowercase 'hota' as identifier: $MOD_ID" >&2
+else
+    # If mod.json has an identifier, use it but also ensure lowercase version is set
+    MOD_ID="$HOTA_MOD_IDENTIFIER"
+    echo "Using mod identifier: $MOD_ID (lowercase for VCMI compatibility)" >&2
 fi
 echo "Using mod identifier: $MOD_ID" >&2
-echo "⚠️  IMPORTANT: VCMI uses directory name as mod identifier when mod.json has no 'identifier' field" >&2
+echo "⚠️  IMPORTANT: VCMI uses lowercase directory name as mod identifier" >&2
 
 echo ""
 echo "Enabling HotA mod in VCMI configuration..."
@@ -95,6 +105,8 @@ import os
 config_file = "$VCMI_CONFIG"
 mod_name = "$HOTA_MOD_NAME"
 mod_id = "$MOD_ID"
+# Always use lowercase "hota" as the primary identifier for VCMI
+hota_identifier = "hota"
 
 # Create config directory if it doesn't exist
 os.makedirs(os.path.dirname(config_file), exist_ok=True)
@@ -115,53 +127,55 @@ except:
 if "modSettings" not in config:
     config["modSettings"] = {}
 
-# VCMI uses directory name as the key - this is the most important
-config["modSettings"][mod_name] = {
+# VCMI uses lowercase "hota" as the identifier - this is the most important
+# Set it with lowercase first (primary)
+config["modSettings"][hota_identifier] = {
     "active": True,
     "enabled": True
 }
-print(f"   Set modSettings['{mod_name}'] = enabled (using directory name)")
+print(f"   Set modSettings['{hota_identifier}'] = enabled (lowercase identifier)")
 
-# Also try with mod_id if it's different from mod_name and not NOT_FOUND
-if mod_id and mod_id != mod_name and mod_id != "NOT_FOUND":
-    config["modSettings"][mod_id] = {
+# Also set with directory name if different (for compatibility)
+if mod_name and mod_name.lower() != hota_identifier:
+    config["modSettings"][mod_name] = {
         "active": True,
         "enabled": True
     }
-    print(f"   Set modSettings['{mod_id}'] = enabled (from mod.json)")
+    print(f"   Set modSettings['{mod_name}'] = enabled (directory name)")
 
 # Approach 2: activeMods array (VCMI uses this to list active mods)
 if "activeMods" not in config:
     config["activeMods"] = []
 
-# Add directory name to activeMods (most important - VCMI uses this)
-if mod_name and mod_name not in config["activeMods"]:
+# Add lowercase "hota" to activeMods (most important - VCMI uses this)
+if hota_identifier not in config["activeMods"]:
+    config["activeMods"].append(hota_identifier)
+    print(f"   Added '{hota_identifier}' to activeMods (lowercase identifier)")
+
+# Also add directory name if different (for compatibility)
+if mod_name and mod_name.lower() != hota_identifier and mod_name not in config["activeMods"]:
     config["activeMods"].append(mod_name)
     print(f"   Added '{mod_name}' to activeMods (directory name)")
-
-# Also add mod_id if it's different and valid
-if mod_id and mod_id != mod_name and mod_id != "NOT_FOUND" and mod_id not in config["activeMods"]:
-    config["activeMods"].append(mod_id)
-    print(f"   Added '{mod_id}' to activeMods (from mod.json)")
 
 # Approach 3: mods array (deprecated but some versions might use it)
 if "mods" not in config:
     config["mods"] = []
 
-# Add directory name to mods array (deprecated but some versions use it)
-if mod_name and mod_name not in config["mods"]:
-    config["mods"].append(mod_name)
+# Add lowercase "hota" to mods array (deprecated but some versions use it)
+if hota_identifier not in config["mods"]:
+    config["mods"].append(hota_identifier)
 
-# Also add mod_id if valid
-if mod_id and mod_id != mod_name and mod_id != "NOT_FOUND" and mod_id not in config["mods"]:
-    config["mods"].append(mod_id)
+# Also add directory name if different (for compatibility)
+if mod_name and mod_name.lower() != hota_identifier and mod_name not in config["mods"]:
+    config["mods"].append(mod_name)
 
 # Save config
 with open(config_file, "w") as f:
     json.dump(config, f, indent=2)
 
 print(f"✅ HotA mod enabled in VCMI configuration")
-print(f"   Used identifiers: {mod_name}, {mod_id}")
+print(f"   Primary identifier: {hota_identifier} (lowercase)")
+print(f"   Directory name: {mod_name}")
 print(f"   Config saved to: {config_file}")
 PYEOF
 
