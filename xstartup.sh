@@ -27,14 +27,21 @@ try:
     mod_settings = config.get('modSettings', {})
     active_mods = config.get('activeMods', [])
     
-    # Check both HotA and hota (case variations)
+    # Handle activeMods as both array and object (VCMI versions differ)
+    if isinstance(active_mods, dict):
+        active_mods_list = list(active_mods.keys())
+    else:
+        active_mods_list = active_mods if isinstance(active_mods, list) else []
+    
+    # Check both HotA and hota (case variations) in modSettings (primary)
+    # and activeMods (secondary)
     hota_enabled = (
         mod_settings.get('HotA', {}).get('enabled', False) or
         mod_settings.get('HotA', {}).get('active', False) or
         mod_settings.get('hota', {}).get('enabled', False) or
         mod_settings.get('hota', {}).get('active', False) or
-        'HotA' in active_mods or
-        'hota' in active_mods
+        'HotA' in active_mods_list or
+        'hota' in active_mods_list
     )
     sys.exit(0 if hota_enabled else 1)
 except:
@@ -96,6 +103,20 @@ force_restart_vcmi() {
 # Ensure HOTA mod is enabled before starting VCMI
 # Give it a moment for X server to be ready
 sleep 5
+
+# Wait a bit if HOTA installation is in progress (from background task in start.sh)
+if [ -f /data/mods/.hota-install-queued ]; then
+    echo "⏳ HOTA installation in progress, waiting up to 60 seconds..." >&2
+    for i in {1..12}; do
+        sleep 5
+        if [ ! -f /data/mods/.hota-install-queued ]; then
+            echo "✅ HOTA installation completed" >&2
+            break
+        fi
+    done
+    # Give it a moment for the enable script to run
+    sleep 3
+fi
 
 # Check and enable HOTA mod before starting VCMI
 ensure_hota_enabled
