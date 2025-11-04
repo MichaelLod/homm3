@@ -48,6 +48,22 @@ Files will be saved to `/data/Data/` (persistent storage) and automatically link
 
 1. In desktop, right-click → VCMI Client
 2. Or in terminal: `vcmiclient`
+3. **VCMI starts automatically** when you open the browser - no need to manually launch it!
+
+## 7. HotA Mod (Horn of the Abyss)
+
+✅ **HotA mod is automatically loaded when available!**
+
+The system will:
+- **Auto-install**: HotA mod is automatically downloaded from GitHub on first startup (if not already installed)
+- **Auto-enable**: HotA mod is automatically enabled in VCMI configuration
+- **Auto-load**: When you open the browser, VCMI starts with HotA mod already loaded and ready to use
+
+**Manual installation** (if auto-install fails):
+1. Run: `/setup-hota-mod.sh` or `/install-hota.sh`
+2. HotA will be automatically enabled on next browser access
+
+**HotA mod location**: `/data/mods/` (persists across deployments)
 
 ## Save Games
 
@@ -58,6 +74,11 @@ Save games are automatically saved to `/app/saves` which persists across deploym
 - **Can't connect?** Check Railway service is running
 - **VCMI won't start?** Verify HoMM 3 files are in `~/.vcmi/Data/`
 - **Build failed?** Build should be fast (~2-5 minutes) using pre-built VCMI from PPA
+- **HotA mod not loading?** 
+  - Check if mod is installed: `ls -la ~/.vcmi/Mods/`
+  - Check if mod is enabled: Check `/root/.config/vcmi/settings.json` for `modSettings` or `activeMods`
+  - Restart VCMI: `pkill -9 vcmiclient` (it will auto-restart)
+  - Manual enable: Run `/usr/local/bin/enable-hota-mod`
 
 ## Notes
 

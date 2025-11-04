@@ -6,6 +6,72 @@ unset DBUS_SESSION_BUS_ADDRESS
 fluxbox &
 sleep 3
 
+# Function to check and enable HOTA mod before starting VCMI
+ensure_hota_enabled() {
+    echo "Checking HOTA mod status..." >&2
+    
+    # Check if HOTA mod is installed
+    if [ -d "$HOME/.vcmi/Mods/HotA" ] || [ -d "$HOME/.vcmi/Mods/hota" ]; then
+        echo "✅ HOTA mod found in Mods directory" >&2
+        
+        # Check if HOTA is already enabled in VCMI config
+        VCMI_CONFIG="$HOME/.config/vcmi/settings.json"
+        if [ -f "$VCMI_CONFIG" ]; then
+            # Check if HOTA is enabled in config
+            if python3 -c "
+import json
+import sys
+try:
+    with open('$VCMI_CONFIG', 'r') as f:
+        config = json.load(f)
+    mod_settings = config.get('modSettings', {})
+    active_mods = config.get('activeMods', [])
+    
+    # Check both HotA and hota (case variations)
+    hota_enabled = (
+        mod_settings.get('HotA', {}).get('enabled', False) or
+        mod_settings.get('HotA', {}).get('active', False) or
+        mod_settings.get('hota', {}).get('enabled', False) or
+        mod_settings.get('hota', {}).get('active', False) or
+        'HotA' in active_mods or
+        'hota' in active_mods
+    )
+    sys.exit(0 if hota_enabled else 1)
+except:
+    sys.exit(1)
+" 2>/dev/null; then
+                echo "✅ HOTA mod already enabled in VCMI config" >&2
+                return 0
+            else
+                echo "⚠️  HOTA mod installed but not enabled, enabling now..." >&2
+            fi
+        else
+            echo "⚠️  VCMI config not found, will enable HOTA mod..." >&2
+        fi
+        
+        # Enable HOTA mod using the enable script
+        if [ -f /usr/local/bin/enable-hota-mod ]; then
+            /usr/local/bin/enable-hota-mod >&2
+            if [ $? -eq 0 ]; then
+                echo "✅ HOTA mod enabled successfully" >&2
+                # Small wait to ensure config file is fully written
+                sleep 1
+                return 0
+            else
+                echo "⚠️  Failed to enable HOTA mod automatically" >&2
+                return 1
+            fi
+        else
+            echo "⚠️  enable-hota-mod script not found" >&2
+            return 1
+        fi
+    else
+        echo "ℹ️  HOTA mod not found in Mods directory" >&2
+        echo "   Install it using: /setup-hota-mod.sh or /install-hota.sh" >&2
+        return 0  # Not an error if mod isn't installed
+    fi
+}
+
 # Function to start VCMI
 start_vcmi() {
     echo "Starting VCMI..." >&2
@@ -27,9 +93,15 @@ force_restart_vcmi() {
     start_vcmi
 }
 
-# Start VCMI automatically (VCMI will automatically resume last game if available)
+# Ensure HOTA mod is enabled before starting VCMI
 # Give it a moment for X server to be ready
 sleep 5
+
+# Check and enable HOTA mod before starting VCMI
+ensure_hota_enabled
+
+# Start VCMI automatically (VCMI will automatically resume last game if available)
+# HOTA mod should now be loaded automatically
 start_vcmi
 
 # Keep session alive and restart VCMI if it crashes or exits
