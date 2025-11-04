@@ -84,6 +84,51 @@ Save games are automatically saved to `/app/saves` which persists across deploym
   - **Important**: Start a NEW game (not load existing) - HotA features appear in new games
   - **Note**: Not all maps support Cove town - use a map that includes HotA/Cove faction
 
+## Logs and Debugging
+
+### Where Logs Appear
+
+**Railway Deployment Logs (Automatic):**
+- Output from `start.sh` (stderr) - ✅ **Visible in Railway dashboard**
+- Supervisor startup messages - ✅ **Visible in Railway dashboard**
+- Script output (stderr) - ✅ **Visible in Railway dashboard**
+
+**Logs Requiring SSH/CLI Access:**
+- Supervisor program logs: `/var/log/supervisor/`
+  - `supervisord.log` - Main supervisor log
+  - `vnc.log` - VNC server log
+  - `novnc.log` - noVNC web server log
+- VCMI client logs: `~/.local/share/vcmi/*.log`
+- Application logs: `/tmp/*.log` (HotA installation, etc.)
+
+### Accessing Logs
+
+**Option 1: Railway Dashboard**
+- Go to your Railway service → "Deployments" tab
+- Click on a deployment → "Logs" tab
+- Shows stdout/stderr from main process and startup scripts
+
+**Option 2: Railway CLI**
+```bash
+# Connect to service
+railway connect
+
+# View logs script
+/usr/local/bin/show-logs
+
+# Or view specific logs
+tail -f /var/log/supervisor/vnc.log
+tail -f /var/log/supervisor/novnc.log
+cat ~/.local/share/vcmi/*.log
+```
+
+**Option 3: SSH Access**
+If you have SSH enabled, you can access logs directly:
+```bash
+railway ssh
+/usr/local/bin/show-logs
+```
+
 ## Notes
 
 - Build should complete in 2-5 minutes using pre-built VCMI
